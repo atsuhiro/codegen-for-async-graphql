@@ -1,0 +1,12 @@
+[package]
+name = "codegen-for-async-graphql"
+version = "0.1.0"
+authors = ["Atsuhiro Takahashi <fxyoxbjis@gmail.com>"]
+edition = "2018"
+
+[[bin]]
+name = "codegen"
+path = "src/codegen.rs"
+
+[dependencies]
+async-graphql-parser = "1.14.7"
