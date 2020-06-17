@@ -10,3 +10,6 @@ path = "src/codegen.rs"
 
 [dependencies]
 async-graphql-parser = "1.14.7"
+proc-macro2 = { version = "1.0", default-features = false }
+quote = "1.0.7"
+toolchain_find = "0.1"
