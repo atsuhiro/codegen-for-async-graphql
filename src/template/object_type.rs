@@ -38,12 +38,16 @@ where
     fn to_token_stream(&self) -> TokenStream {
         let name = Ident::new(self.name(), Span::call_site());
         quote!(
-            #[SimpleObject]
-            struct #name {
-                #[field(desc = "Returns the sum of a and b")]
-                id: String,
-                #[field(desc = "Returns the sum of a and b")]
-                name: String,
+            use async_graphql::*;
+
+            struct #name;
+
+            #[Object]
+            impl #name {
+                #[field]
+                async fn name(&self) -> String {
+                    "Aaron".to_string()
+                }
             }
         )
     }

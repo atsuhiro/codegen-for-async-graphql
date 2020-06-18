@@ -1,20 +1,12 @@
 use std::env;
-use std::fs;
 
-mod parser;
-mod template;
+use codegen_for_async_graphql_template::{generate_from_path, Config};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
     let path = args[1].clone();
-
-    let schema = open_schema(&path);
-
-    let doc = parser::parse(&schema);
-    let object_types = parser::transform(&doc);
-    template::generate_object_type(object_types);
-}
-
-fn open_schema(path: &String) -> String {
-    fs::read_to_string(path).unwrap()
+    let config = Config {
+        output_bnase_path: "./".to_string(),
+    };
+    generate_from_path(&path, config);
 }
