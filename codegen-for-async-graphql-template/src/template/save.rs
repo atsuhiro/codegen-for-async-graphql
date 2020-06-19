@@ -2,7 +2,7 @@ use std::fs;
 use std::io::Write;
 
 fn path_format(name: &String) -> String {
-    format!("./src/{}.rs", name)
+    format!("./src/models/{}.rs", name)
 }
 
 use std::process::{Command, Stdio};

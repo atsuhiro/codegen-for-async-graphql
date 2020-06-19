@@ -4,11 +4,13 @@ use async_graphql_parser::schema::{Field, ObjectType, Type};
 
 use proc_macro2::{Ident, Span, TokenStream};
 
-use crate::template::Save;
+use super::Save;
 
 impl Save for ObjectType {}
 
 use std::ops::Deref;
+
+use super::utils::snake_case;
 
 pub trait ObjectTypeExt {
     fn name(&self) -> &String;
@@ -36,16 +38,61 @@ impl ObjectTypeExt for ObjectType {
 }
 
 pub trait FieldExt {
+    fn body_token(&self) -> proc_macro2::TokenStream;
+    fn field_name_token(&self) -> proc_macro2::TokenStream;
+    fn field_token(&self) -> proc_macro2::TokenStream;
+    fn struct_name(&self) -> String;
+    fn struct_name_token(&self) -> proc_macro2::TokenStream;
     fn ty(&self) -> String;
 }
 
 impl FieldExt for Field {
+    fn body_token(&self) -> proc_macro2::TokenStream {
+        if self.ty() == "String" {
+            return quote!("Aaron".to_string());
+        }
+        if self.ty() == "Bool" {
+            return quote!(true);
+        }
+        let t = self.struct_name_token();
+        quote!(#t {})
+    }
+
+    fn field_name_token(&self) -> proc_macro2::TokenStream {
+        let name = Ident::new(&self.name.node, Span::call_site());
+        quote!(#name)
+    }
+
+    fn field_token(&self) -> proc_macro2::TokenStream {
+        let n = &self.field_name_token();
+        let ty = &self.struct_name_token();
+        let body = &self.body_token();
+        quote!(
+            async fn #n(&self) -> #ty {
+                #body
+            }
+        )
+    }
+
+    fn struct_name(&self) -> String {
+        let t = self.ty();
+        if t == "Bool" {
+            return "bool".to_string();
+        }
+        return t;
+    }
+
+    fn struct_name_token(&self) -> proc_macro2::TokenStream {
+        let name = Ident::new(&self.struct_name(), Span::call_site());
+        quote!(#name)
+    }
+
     fn ty(&self) -> String {
         let t = &self.ty.node;
         match t {
             Type::Named(_t) => panic!("Not Implemented"),
             Type::NonNull(t) => match &t.deref() {
-                Type::Named(_t) => "String".to_string(),
+                Type::Named(t) => t.to_string(),
                 _ => panic!("Not Implemented"),
             },
             _ => panic!("Not Implemented"),
@@ -53,32 +100,65 @@ impl FieldExt for Field {
     }
 }
 
+fn generate_uses(st: &String, uses: &proc_macro2::TokenStream) -> proc_macro2::TokenStream {
+    if st == "String" || st == "Bool" {
+        return uses.clone();
+    }
+    let snake = snake_case(&st.to_string());
+    let u = Ident::new(&st, Span::call_site());
+    let snake_u = Ident::new(&snake, Span::call_site());
+    quote! {
+        #uses
+        use super::#snake_u::#u;
+    }
+}
+
 pub trait TokenStreamExt {
+    fn fields_token(
+        &self,
+        users: proc_macro2::TokenStream,
+    ) -> (proc_macro2::TokenStream, proc_macro2::TokenStream);
+    fn name_token(&self) -> proc_macro2::TokenStream;
     fn to_token_stream(&self) -> TokenStream;
-    fn to_model_file(&self);
+    fn to_model_file(&self) -> String;
 }
 
 impl TokenStreamExt for ObjectType
 where
     ObjectType: Save,
 {
-    fn to_token_stream(&self) -> TokenStream {
-        let name = Ident::new(self.name(), Span::call_site());
-
+    fn fields_token(
+        &self,
+        mut uses: proc_macro2::TokenStream,
+    ) -> (proc_macro2::TokenStream, proc_macro2::TokenStream) {
         let mut fields = quote! {};
         self.fields().iter().for_each(|f| {
-            let n = Ident::new(&f.name.node, Span::call_site());
-            let ty = Ident::new(&f.ty(), Span::call_site());
+            uses = generate_uses(&f.ty(), &uses);
+            let field = &f.field_token();
             fields = quote!(
                 #fields
-                async fn #n(&self) -> #ty {
-                    "Aaron".to_string()
-                }
+                #field
             );
         });
+        (fields, uses)
+    }
+
+    fn name_token(&self) -> proc_macro2::TokenStream {
+        let name = Ident::new(self.name(), Span::call_site());
+        quote!(#name)
+    }
+
+    fn to_token_stream(&self) -> TokenStream {
+        let name = &self.name_token();
+
+        let uses = quote! {
+            use async_graphql::*;
+        };
+
+        let (fields, uses) = &self.fields_token(uses);
 
         quote!(
-            use async_graphql::*;
+            #uses
 
             #[derive(Debug)]
             pub struct #name {}
@@ -90,14 +170,16 @@ where
         )
     }
 
-    fn to_model_file(&self) {
+    fn to_model_file(&self) -> String {
         let src = self.to_token_stream();
-        ObjectType::save(&self.name(), &src.to_string());
+        let name = snake_case(&self.name());
+        Self::save(&name, &src.to_string());
+        name
     }
 }
 
-pub fn generate_object_type(objs: Vec<&ObjectType>) {
-    objs.iter().for_each(|f| f.to_model_file());
+pub fn generate_object_type(objs: Vec<&ObjectType>) -> Vec<String> {
+    objs.iter().map(|f| f.to_model_file()).collect()
 }
 
 pub fn generate_token_stream(objs: Vec<&ObjectType>) -> Vec<TokenStream> {

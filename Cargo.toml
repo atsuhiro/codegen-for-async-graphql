@@ -8,10 +8,6 @@ edition = "2018"
 name = "codegen"
 path = "src/codegen.rs"
 
-[[bin]]
-name = "coderun"
-path = "src/coderun.rs"
-
 [dependencies]
 codegen-for-async-graphql-derive = { path = "codegen-for-async-graphql-derive" }
 codegen-for-async-graphql-template = { path = "codegen-for-async-graphql-template" }

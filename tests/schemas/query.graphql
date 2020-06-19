@@ -1,0 +1,13 @@
+# schema {
+#   query: Root
+# }
+
+type Root {
+  me: Me!
+  active: Bool!
+}
+
+type Me {
+  name: String!
+  email: String!
+}
