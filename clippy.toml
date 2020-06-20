@@ -1,0 +1,2 @@
+blacklisted-names = ["hoge", "moge"]
+cognitive-complexity-threshold = 3

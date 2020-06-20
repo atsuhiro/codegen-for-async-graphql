@@ -28,7 +28,7 @@ impl DefinitionMatcher for Document {
     }
 }
 
-pub fn parse(schema: &String) -> Document {
+pub fn parse(schema: &str) -> Document {
     match parse_schema(schema) {
         Ok(f) => f,
         Err(e) => {

@@ -38,16 +38,16 @@ impl ObjectTypeExt for ObjectType {
 }
 
 pub trait FieldExt {
-    fn body_token(&self) -> proc_macro2::TokenStream;
-    fn field_name_token(&self) -> proc_macro2::TokenStream;
-    fn field_token(&self) -> proc_macro2::TokenStream;
+    fn body_token(&self) -> TokenStream;
+    fn field_name_token(&self) -> TokenStream;
+    fn field_token(&self) -> TokenStream;
     fn struct_name(&self) -> String;
-    fn struct_name_token(&self) -> proc_macro2::TokenStream;
+    fn struct_name_token(&self) -> TokenStream;
     fn ty(&self) -> String;
 }
 
 impl FieldExt for Field {
-    fn body_token(&self) -> proc_macro2::TokenStream {
+    fn body_token(&self) -> TokenStream {
         if self.ty() == "String" {
             return quote!("Aaron".to_string());
         }
@@ -58,12 +58,12 @@ impl FieldExt for Field {
         quote!(#t {})
     }
 
-    fn field_name_token(&self) -> proc_macro2::TokenStream {
+    fn field_name_token(&self) -> TokenStream {
         let name = Ident::new(&self.name.node, Span::call_site());
         quote!(#name)
     }
 
-    fn field_token(&self) -> proc_macro2::TokenStream {
+    fn field_token(&self) -> TokenStream {
         let n = &self.field_name_token();
         let ty = &self.struct_name_token();
         let body = &self.body_token();
@@ -79,10 +79,10 @@ impl FieldExt for Field {
         if t == "Bool" {
             return "bool".to_string();
         }
-        return t;
+        t
     }
 
-    fn struct_name_token(&self) -> proc_macro2::TokenStream {
+    fn struct_name_token(&self) -> TokenStream {
         let name = Ident::new(&self.struct_name(), Span::call_site());
         quote!(#name)
     }
@@ -100,12 +100,12 @@ impl FieldExt for Field {
     }
 }
 
-fn generate_uses(st: &String, uses: &proc_macro2::TokenStream) -> proc_macro2::TokenStream {
+fn generate_uses(st: &str, uses: &TokenStream) -> TokenStream {
     if st == "String" || st == "Bool" {
         return uses.clone();
     }
     let snake = snake_case(&st.to_string());
-    let u = Ident::new(&st, Span::call_site());
+    let u = Ident::new(st, Span::call_site());
     let snake_u = Ident::new(&snake, Span::call_site());
     quote! {
         #uses
@@ -114,11 +114,8 @@ fn generate_uses(st: &String, uses: &proc_macro2::TokenStream) -> proc_macro2::T
 }
 
 pub trait TokenStreamExt {
-    fn fields_token(
-        &self,
-        users: proc_macro2::TokenStream,
-    ) -> (proc_macro2::TokenStream, proc_macro2::TokenStream);
-    fn name_token(&self) -> proc_macro2::TokenStream;
+    fn fields_token(&self, users: TokenStream) -> (TokenStream, TokenStream);
+    fn name_token(&self) -> TokenStream;
     fn to_token_stream(&self) -> TokenStream;
     fn to_model_file(&self) -> String;
 }
@@ -127,10 +124,7 @@ impl TokenStreamExt for ObjectType
 where
     ObjectType: Save,
 {
-    fn fields_token(
-        &self,
-        mut uses: proc_macro2::TokenStream,
-    ) -> (proc_macro2::TokenStream, proc_macro2::TokenStream) {
+    fn fields_token(&self, mut uses: TokenStream) -> (TokenStream, TokenStream) {
         let mut fields = quote! {};
         self.fields().iter().for_each(|f| {
             uses = generate_uses(&f.ty(), &uses);
@@ -143,7 +137,7 @@ where
         (fields, uses)
     }
 
-    fn name_token(&self) -> proc_macro2::TokenStream {
+    fn name_token(&self) -> TokenStream {
         let name = Ident::new(self.name(), Span::call_site());
         quote!(#name)
     }
@@ -172,7 +166,7 @@ where
 
     fn to_model_file(&self) -> String {
         let src = self.to_token_stream();
-        let name = snake_case(&self.name());
+        let name = snake_case(self.name());
         Self::save(&name, &src.to_string());
         name
     }

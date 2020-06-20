@@ -1,7 +1,7 @@
 use std::fs;
 use std::io::Write;
 
-fn path_format(name: &String) -> String {
+fn path_format(name: &str) -> String {
     format!("./src/models/{}.rs", name)
 }
 
@@ -18,7 +18,7 @@ pub fn lint(path: &str) {
 }
 
 pub trait Save {
-    fn save(name: &String, src: &String) {
+    fn save(name: &str, src: &str) {
         let path = path_format(name);
         let mut f = fs::File::create(&path).unwrap();
         f.write_all(src.as_bytes()).unwrap();
