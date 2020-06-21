@@ -8,17 +8,15 @@ use super::Save;
 
 impl Save for ObjectType {}
 
-use std::ops::Deref;
-
 use super::utils::snake_case;
 
-pub trait ObjectTypeExt {
+trait Extension {
     fn name(&self) -> &String;
     fn description(&self) -> Option<&String>;
     fn fields(&self) -> Vec<&Field>;
 }
 
-impl ObjectTypeExt for ObjectType {
+impl Extension for ObjectType {
     fn name(&self) -> &String {
         &self.name.node
     }
@@ -91,7 +89,7 @@ impl FieldExt for Field {
         let t = &self.ty.node;
         match t {
             Type::Named(_t) => panic!("Not Implemented"),
-            Type::NonNull(t) => match &t.deref() {
+            Type::NonNull(t) => match &**t {
                 Type::Named(t) => t.to_string(),
                 _ => panic!("Not Implemented"),
             },
@@ -146,7 +144,8 @@ where
         let name = &self.name_token();
 
         let uses = quote! {
-            use async_graphql::*;
+            use async_graphql::Object;
+            use super::DataSource;
         };
 
         let (fields, uses) = &self.fields_token(uses);
@@ -172,10 +171,10 @@ where
     }
 }
 
-pub fn generate_object_type(objs: Vec<&ObjectType>) -> Vec<String> {
+pub fn generate_object_type_file(objs: &[&ObjectType]) -> Vec<String> {
     objs.iter().map(|f| f.to_model_file()).collect()
 }
 
-pub fn generate_token_stream(objs: Vec<&ObjectType>) -> Vec<TokenStream> {
+pub fn generate_token_stream(objs: &[&ObjectType]) -> Vec<TokenStream> {
     objs.iter().map(|f| f.to_token_stream()).collect()
 }

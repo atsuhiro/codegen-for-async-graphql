@@ -1,5 +1,5 @@
 use crate::parser;
-use crate::template::{generate_file, generate_object_type, generate_token_stream};
+use crate::template::{generate_file, generate_object_type_file, generate_token_stream};
 
 use proc_macro2::TokenStream;
 
@@ -11,13 +11,13 @@ pub struct Config {
 pub fn generate_token_from_string(schema: &str, _config: &Config) -> Vec<TokenStream> {
     let doc = parser::parse(schema);
     let object_types = parser::transform(&doc);
-    generate_token_stream(object_types)
+    generate_token_stream(&object_types)
 }
 
 pub fn generate_file_from_string(schema: &str, _config: &Config) {
     let doc = parser::parse(schema);
     let object_types = parser::transform(&doc);
-    let names = generate_object_type(object_types);
+    let names = generate_object_type_file(&object_types);
     generate_file(&names);
     println!("{:?}", names);
 }

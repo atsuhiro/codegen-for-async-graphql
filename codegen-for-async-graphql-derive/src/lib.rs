@@ -7,10 +7,10 @@ use quote::quote;
 #[proc_macro_attribute]
 #[allow(non_snake_case)]
 pub fn DynSchema(args: TokenStream, input: TokenStream) -> TokenStream {
-    let path = path(args);
+    let path = path(&args);
     let config = conf();
     match generate(&path, &config) {
-        Some(f) => aggregate(input, f),
+        Some(f) => aggregate(input, &f),
         _ => panic!("Not implemented"),
     }
 }
@@ -29,11 +29,11 @@ fn generate(path: &str, config: &Config) -> Option<proc_macro2::TokenStream> {
     res
 }
 
-fn path(args: TokenStream) -> String {
+fn path(args: &TokenStream) -> String {
     format!("{}", args).replace("\"", "")
 }
 
-fn aggregate(input: TokenStream, generated: proc_macro2::TokenStream) -> TokenStream {
+fn aggregate(input: TokenStream, generated: &proc_macro2::TokenStream) -> TokenStream {
     let i = proc_macro2::TokenStream::from(input);
     quote!(
         #i

@@ -1,4 +1,5 @@
-use async_graphql::*;
+use super::DataSource;
+use async_graphql::Object;
 #[derive(Debug)]
 pub struct Me {}
 #[Object]
