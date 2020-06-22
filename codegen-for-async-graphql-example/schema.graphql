@@ -7,10 +7,16 @@ type Root {
   active: Bool!
 }
 
+type FriendConnection {
+  totalCount: Int!
+}
+
 type Me {
   id: ID!
   name: String!
-  email: String!
-  age: Int!
   rank: Float!
+  email: String
+  age: Int
+  active: Bool
+  friends: FriendConnection!
 }

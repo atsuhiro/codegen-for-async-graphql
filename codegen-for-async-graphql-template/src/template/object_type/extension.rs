@@ -8,25 +8,16 @@ use super::Save;
 use crate::Config;
 
 use super::snake_case;
-use super::FieldExt;
-
-fn generate_uses(st: &str, uses: &TokenStream) -> TokenStream {
-    if st == "String" || st == "Bool" || st == "Int" || st == "Float" || st == "ID" {
-        return uses.clone();
-    }
-    let snake = snake_case(&st.to_string());
-    let u = Ident::new(st, Span::call_site());
-    let snake_u = Ident::new(&snake, Span::call_site());
-    quote! {
-        #uses
-        use super::#snake_u::#u;
-    }
-}
+use super::{FieldExt, FieldTokenStreamExt};
 
 pub trait Extension {
-    fn name(&self) -> &String;
+    fn custom_fields(&self) -> Vec<&Field>;
     fn description(&self) -> Option<&String>;
     fn fields(&self) -> Vec<&Field>;
+    fn field_partition(&self) -> (Vec<&Field>, Vec<&Field>);
+    fn name(&self) -> &String;
+    fn scalar_fields(&self) -> Vec<&Field>;
+    fn to_model_file(&self, config: &Config) -> String;
 }
 
 impl Extension for ObjectType {
@@ -46,27 +37,58 @@ impl Extension for ObjectType {
         self.fields.iter().for_each(|f| vec.push(&f.node));
         vec
     }
+
+    fn field_partition(&self) -> (Vec<&Field>, Vec<&Field>) {
+        self.fields().iter().partition(|f| f.is_scalar())
+    }
+
+    fn custom_fields(&self) -> Vec<&Field> {
+        self.field_partition().1
+    }
+
+    fn scalar_fields(&self) -> Vec<&Field> {
+        self.field_partition().0
+    }
+
+    fn to_model_file(&self, config: &Config) -> String {
+        let src = self.to_token_stream();
+        let name = snake_case(self.name());
+        let output_path = &config.output_bnase_path;
+        Self::save(&name, &src.to_string(), output_path);
+        name
+    }
 }
 
 pub trait TokenStreamExt {
-    fn custom_fields(&self) -> Vec<&Field>;
+    fn generate_uses(field: &Field, uses: &TokenStream) -> TokenStream;
     fn custom_fields_token(&self, users: TokenStream) -> (TokenStream, TokenStream);
     fn name_token(&self) -> TokenStream;
-    fn scalar_fields(&self) -> Vec<&Field>;
     fn scalar_fields_token(&self) -> TokenStream;
     fn struct_properties_token(&self) -> TokenStream;
     fn to_token_stream(&self) -> TokenStream;
-    fn to_model_file(&self, config: &Config) -> String;
 }
 
 impl TokenStreamExt for ObjectType
 where
     ObjectType: Save,
 {
+    fn generate_uses(field: &Field, uses: &TokenStream) -> TokenStream {
+        match field.module_name() {
+            None => uses.clone(),
+            Some(_t) => {
+                let use_name = field.use_module_token();
+                quote! {
+                    #uses
+                    #use_name
+                }
+            }
+        }
+    }
+
     fn custom_fields_token(&self, mut uses: TokenStream) -> (TokenStream, TokenStream) {
         let mut fields = quote! {};
         self.custom_fields().iter().for_each(|f| {
-            uses = generate_uses(&f.ty(), &uses);
+            uses = Self::generate_uses(f, &uses);
             let field = &f.custom_field_token();
             fields = quote!(
                 #fields
@@ -79,40 +101,6 @@ where
     fn name_token(&self) -> TokenStream {
         let name = Ident::new(self.name(), Span::call_site());
         quote!(#name)
-    }
-
-    fn custom_fields(&self) -> Vec<&Field> {
-        self.fields()
-            .iter()
-            .filter_map(|f| {
-                if f.ty() == "String"
-                    || f.ty() == "Bool"
-                    || f.ty() == "Int"
-                    || f.ty() == "Float"
-                    || f.ty() == "ID"
-                {
-                    return None;
-                }
-                Some(*f)
-            })
-            .collect()
-    }
-
-    fn scalar_fields(&self) -> Vec<&Field> {
-        self.fields()
-            .iter()
-            .filter_map(|f| {
-                if f.ty() == "String"
-                    || f.ty() == "Bool"
-                    || f.ty() == "Int"
-                    || f.ty() == "Float"
-                    || f.ty() == "ID"
-                {
-                    return Some(*f);
-                }
-                None
-            })
-            .collect()
     }
 
     fn scalar_fields_token(&self) -> TokenStream {
@@ -143,7 +131,7 @@ where
         let name = self.name_token();
 
         let uses = quote! {
-            use async_graphql::{Object, Context, ID};
+            use async_graphql::{Context, FieldResult, ID, Object};
             use super::DataSource;
         };
 
@@ -165,13 +153,5 @@ where
                 #scalar_fields_token
             }
         )
-    }
-
-    fn to_model_file(&self, config: &Config) -> String {
-        let src = self.to_token_stream();
-        let name = snake_case(self.name());
-        let output_path = &config.output_bnase_path;
-        Self::save(&name, &src.to_string(), output_path);
-        name
     }
 }

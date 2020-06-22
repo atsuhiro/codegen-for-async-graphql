@@ -1,28 +1,36 @@
+use super::friend_connection::FriendConnection;
 use super::DataSource;
-use async_graphql::{Context, Object, ID};
+use async_graphql::{Context, FieldResult, Object, ID};
 #[derive(Debug)]
 pub struct Me {
     pub id: ID,
     pub name: String,
-    pub email: String,
-    pub age: i32,
     pub rank: f64,
+    pub email: FieldResult<String>,
+    pub age: FieldResult<i32>,
+    pub active: FieldResult<bool>,
 }
 #[Object]
 impl Me {
-    async fn id(&self, ctx: &Context<'_>) -> ID {
+    async fn friends(&self, ctx: &Context<'_>) -> FriendConnection {
+        ctx.data::<DataSource>().friends()
+    }
+    async fn id(&self) -> ID {
         self.id.clone()
     }
-    async fn name(&self, ctx: &Context<'_>) -> String {
+    async fn name(&self) -> String {
         self.name.clone()
     }
-    async fn email(&self, ctx: &Context<'_>) -> String {
+    async fn rank(&self) -> f64 {
+        self.rank.clone()
+    }
+    async fn email(&self) -> FieldResult<String> {
         self.email.clone()
     }
-    async fn age(&self, ctx: &Context<'_>) -> i32 {
+    async fn age(&self) -> FieldResult<i32> {
         self.age.clone()
     }
-    async fn rank(&self, ctx: &Context<'_>) -> f64 {
-        self.rank.clone()
+    async fn active(&self) -> FieldResult<bool> {
+        self.active.clone()
     }
 }

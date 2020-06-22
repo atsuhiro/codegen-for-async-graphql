@@ -14,14 +14,19 @@ impl DataSource {
         true
     }
 
-    fn me(self) -> models::me::Me {
+    fn me(&self) -> models::me::Me {
         models::me::Me {
             id: ID::from("11111"),
             name: "aaa".to_string(),
-            email: "aaa".to_string(),
-            age: 30,
+            email: Ok("aaa@".to_string()),
             rank: 5.1,
+            age: Ok(30),
+            active: Ok(true),
         }
+    }
+
+    fn friends(&self) -> models::friend_connection::FriendConnection {
+        models::friend_connection::FriendConnection { total_count: 10 }
     }
 }
 
@@ -36,7 +41,22 @@ async fn run() {
         .data(data_source)
         .finish();
     let res = schema
-        .execute("{ active me { id name email age rank } }")
+        .execute(
+            "{
+            active
+            me {
+                id
+                name
+                email
+                rank
+                age
+                active
+                friends {
+                    totalCount
+                }
+            }
+        }",
+        )
         .await;
     let json = serde_json::to_string(&async_graphql::http::GQLResponse(res));
     println!("{:?}", json);

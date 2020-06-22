@@ -10,10 +10,12 @@ impl Save for ObjectType {}
 use super::utils::snake_case;
 
 mod extension;
-use extension::TokenStreamExt;
+use extension::Extension as ObjectTypeExt;
+use extension::TokenStreamExt as ObjectTypeTokenStreamExt;
 
 mod field;
 use field::Extension as FieldExt;
+use field::TokenStreamExt as FieldTokenStreamExt;
 
 pub fn generate_object_type_file(objs: &[&ObjectType], config: &Config) -> Vec<String> {
     objs.iter().map(|f| f.to_model_file(config)).collect()

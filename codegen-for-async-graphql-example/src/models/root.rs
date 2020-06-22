@@ -1,6 +1,6 @@
 use super::me::Me;
 use super::DataSource;
-use async_graphql::{Context, Object, ID};
+use async_graphql::{Context, FieldResult, Object, ID};
 #[derive(Debug)]
 pub struct Root {
     pub active: bool,
@@ -10,7 +10,7 @@ impl Root {
     async fn me(&self, ctx: &Context<'_>) -> Me {
         ctx.data::<DataSource>().me()
     }
-    async fn active(&self, ctx: &Context<'_>) -> bool {
+    async fn active(&self) -> bool {
         self.active.clone()
     }
 }
