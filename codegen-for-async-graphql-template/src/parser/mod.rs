@@ -1,9 +1,10 @@
 use async_graphql_parser::parse_schema;
 use async_graphql_parser::schema::{Definition, Document, ObjectType, TypeDefinition};
 
-trait DefinitionMatcher {
+pub trait DefinitionMatcher {
     fn type_definition(&self) -> Vec<&TypeDefinition>;
     fn object_types(&self) -> Vec<&ObjectType>;
+    fn transform(&self) -> Vec<&ObjectType>;
 }
 
 impl DefinitionMatcher for Document {
@@ -26,6 +27,10 @@ impl DefinitionMatcher for Document {
             })
             .collect()
     }
+
+    fn transform(&self) -> Vec<&ObjectType> {
+        self.object_types()
+    }
 }
 
 pub fn parse(schema: &str) -> Document {
@@ -36,8 +41,4 @@ pub fn parse(schema: &str) -> Document {
             panic!("Parse Error: {:?}", e);
         }
     }
-}
-
-pub fn transform(doc: &Document) -> Vec<&ObjectType> {
-    doc.object_types()
 }

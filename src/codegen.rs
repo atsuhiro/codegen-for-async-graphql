@@ -6,7 +6,7 @@ fn main() {
     let args: Vec<String> = env::args().collect();
     let path = args[1].clone();
     let config = Config {
-        output_bnase_path: "./".to_string(),
+        output_bnase_path: args[2].clone(),
     };
     generate_from_path(&path, &config);
 }

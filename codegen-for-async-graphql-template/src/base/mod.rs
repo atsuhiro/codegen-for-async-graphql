@@ -2,9 +2,10 @@ mod generator;
 pub use generator::Config;
 use generator::{generate_file_from_string, generate_token_from_string};
 
-use std::fs;
+pub use super::parser::DefinitionMatcher;
 
 use proc_macro2::TokenStream;
+use std::fs;
 
 #[must_use]
 pub fn generate_token_from_path(path: &str, config: &Config) -> Vec<TokenStream> {

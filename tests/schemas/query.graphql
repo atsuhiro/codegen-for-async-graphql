@@ -8,6 +8,9 @@ type Root {
 }
 
 type Me {
+  id: ID!
   name: String!
   email: String!
+  age: Int!
+  rank: Float!
 }

@@ -1,4 +1,16 @@
-type Query {
+# schema {
+#   query: Root
+# }
+
+type Root {
+  me: Me!
+  active: Bool!
+}
+
+type Me {
+  id: ID!
   name: String!
   email: String!
+  age: Int!
+  rank: Float!
 }
