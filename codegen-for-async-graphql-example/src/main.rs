@@ -10,14 +10,10 @@ use models::root::Root;
 pub struct DataSource {}
 
 impl DataSource {
-    fn active(&self) -> bool {
-        true
-    }
-
     fn me(&self) -> models::me::Me {
         models::me::Me {
             id: ID::from("11111"),
-            name: "aaa".to_string(),
+            name: "Aaron".to_string(),
             email: Ok("aaa@".to_string()),
             rank: 5.1,
             age: Ok(30),
@@ -25,8 +21,28 @@ impl DataSource {
         }
     }
 
+    fn nodes(&self) -> Vec<models::friend::Friend> {
+        let friend1 = models::friend::Friend {
+            id: ID::from("1-1"),
+            name: "Beck".to_string(),
+        };
+        vec![friend1]
+    }
+
     fn friends(&self) -> models::friend_connection::FriendConnection {
         models::friend_connection::FriendConnection { total_count: 10 }
+    }
+
+    fn notifications(&self) -> FieldResult<Vec<models::notification::Notification>> {
+        let node1 = models::notification::Notification {
+            id: ID::from("1-1"),
+            title: "title1".to_string(),
+        };
+        let node2 = models::notification::Notification {
+            id: ID::from("2-1"),
+            title: "title2".to_string(),
+        };
+        Ok(vec![node1, node2])
     }
 }
 
@@ -53,6 +69,14 @@ async fn run() {
                 active
                 friends {
                     totalCount
+                    nodes {
+                        id
+                        name
+                    }
+                }
+                notifications {
+                    id
+                    title
                 }
             }
         }",

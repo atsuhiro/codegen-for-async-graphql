@@ -10,6 +10,8 @@ use crate::Config;
 use super::snake_case;
 use super::{FieldExt, FieldTokenStreamExt};
 
+use super::{BuildingObjectType, BuildingStatus};
+
 pub trait Extension {
     fn custom_fields(&self) -> Vec<&Field>;
     fn description(&self) -> Option<&String>;
@@ -17,7 +19,7 @@ pub trait Extension {
     fn field_partition(&self) -> (Vec<&Field>, Vec<&Field>);
     fn name(&self) -> &String;
     fn scalar_fields(&self) -> Vec<&Field>;
-    fn to_model_file(&self, config: &Config) -> String;
+    fn to_model_file(&self, config: &Config, building_status: &mut BuildingStatus) -> String;
 }
 
 impl Extension for ObjectType {
@@ -50,8 +52,8 @@ impl Extension for ObjectType {
         self.field_partition().0
     }
 
-    fn to_model_file(&self, config: &Config) -> String {
-        let src = self.to_token_stream();
+    fn to_model_file(&self, config: &Config, building_status: &mut BuildingStatus) -> String {
+        let src = self.to_token_stream(building_status);
         let name = snake_case(self.name());
         let output_path = &config.output_bnase_path;
         Self::save(&name, &src.to_string(), output_path);
@@ -65,7 +67,7 @@ pub trait TokenStreamExt {
     fn name_token(&self) -> TokenStream;
     fn scalar_fields_token(&self) -> TokenStream;
     fn struct_properties_token(&self) -> TokenStream;
-    fn to_token_stream(&self) -> TokenStream;
+    fn to_token_stream(&self, building_status: &mut BuildingStatus) -> TokenStream;
 }
 
 impl TokenStreamExt for ObjectType
@@ -127,7 +129,7 @@ where
         properties
     }
 
-    fn to_token_stream(&self) -> TokenStream {
+    fn to_token_stream(&self, building_status: &mut BuildingStatus) -> TokenStream {
         let name = self.name_token();
 
         let uses = quote! {
@@ -138,6 +140,12 @@ where
         let (fields, uses) = self.custom_fields_token(uses);
         let struct_properties = self.struct_properties_token();
         let scalar_fields_token = self.scalar_fields_token();
+
+        let bot = BuildingObjectType {
+            path: snake_case(self.name()),
+            name: snake_case(self.name()),
+        };
+        building_status.object_types.push(bot);
 
         quote!(
             #uses

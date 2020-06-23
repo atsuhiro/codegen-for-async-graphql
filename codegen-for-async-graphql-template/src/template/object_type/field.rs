@@ -6,32 +6,80 @@ use proc_macro2::{Ident, Span, TokenStream};
 
 use super::snake_case;
 
-pub struct FieldType {
+pub struct GQLType {
     name: String,
     non_null: bool,
+    is_list: bool,
+    code_type_name: String,
+    is_scalar: bool,
+}
+
+impl GQLType {
+    fn new(name: &str, non_null: bool, is_list: bool) -> Self {
+        Self {
+            name: name.to_string(),
+            non_null,
+            is_list,
+            code_type_name: Self::struct_type_name(name),
+            is_scalar: Self::is_scalar(name),
+        }
+    }
+
+    fn from_type(ty: &Type) -> Self {
+        Self::from_type_with_non_null(ty, false)
+    }
+
+    fn from_type_with_non_null(ty: &Type, non_null: bool) -> Self {
+        match ty {
+            Type::Named(name) => Self::new(name, non_null, false),
+            Type::NonNull(t) => Self::from_type_with_non_null(t, true),
+            Type::List(t) => match &**t {
+                Type::Named(name) => Self::new(name, non_null, true),
+                _ => unreachable!("Not Implemented"),
+            },
+        }
+    }
+
+    fn is_scalar(name: &str) -> bool {
+        match name {
+            "String" | "Bool" | "Int" | "Float" | "ID" => true,
+            _ => false,
+        }
+    }
+
+    fn struct_type_name(name: &str) -> String {
+        match name {
+            "Bool" => "bool".to_string(),
+            "Int" => "i32".to_string(),
+            "Float" => "f64".to_string(),
+            "ID" => "ID".to_string(),
+            _ => name.to_string(),
+        }
+    }
 }
 
 pub trait Extension {
     fn module_name(&self) -> Option<String>;
+    fn is_list(&self) -> bool;
     fn is_scalar(&self) -> bool;
     fn non_null(&self) -> bool;
     fn snaked_field_name(&self) -> String;
     fn struct_type_name(&self) -> String;
-    fn ty(&self) -> FieldType;
+    fn ty(&self) -> GQLType;
     fn type_name(&self) -> String;
 }
 
 impl Extension for Field {
     fn is_scalar(&self) -> bool {
-        let ty = self.type_name();
-        if ty == "String" || ty == "Bool" || ty == "Int" || ty == "Float" || ty == "ID" {
-            return true;
-        }
-        false
+        self.ty().is_scalar
     }
 
     fn non_null(&self) -> bool {
         self.ty().non_null
+    }
+
+    fn is_list(&self) -> bool {
+        self.ty().is_list
     }
 
     fn module_name(&self) -> Option<String> {
@@ -46,42 +94,15 @@ impl Extension for Field {
     }
 
     fn struct_type_name(&self) -> String {
-        let name = self.type_name();
-        if name == "Bool" {
-            return "bool".to_string();
-        }
-        if name == "Int" {
-            return "i32".to_string();
-        }
-        if name == "Float" {
-            return "f64".to_string();
-        }
-        if name == "ID" {
-            return "ID".to_string();
-        }
-        name
+        self.ty().code_type_name
     }
 
     fn type_name(&self) -> String {
         self.ty().name
     }
 
-    fn ty(&self) -> FieldType {
-        let t = &self.ty.node;
-        match t {
-            Type::Named(name) => FieldType {
-                name: name.clone(),
-                non_null: false,
-            },
-            Type::NonNull(t) => match &**t {
-                Type::Named(name) => FieldType {
-                    name: name.clone(),
-                    non_null: true,
-                },
-                _ => panic!("Not Implemented"),
-            },
-            _ => panic!("Not Implemented"),
-        }
+    fn ty(&self) -> GQLType {
+        GQLType::from_type(&self.ty.node)
     }
 }
 
@@ -128,14 +149,14 @@ impl TokenStreamExt for Field {
     }
 
     fn struct_name_token(&self) -> TokenStream {
-        let name = &self.struct_type_name();
-        let non_null = self.non_null();
+        let name = self.struct_type_name();
         let name = Ident::new(&name, Span::call_site());
-        if non_null {
-            return quote!(#name);
-        } else {
-            return quote!(FieldResult<#name>);
-        };
+        match (self.non_null(), self.is_list()) {
+            (true, false) => quote!(#name),
+            (true, true) => quote!(Vec<#name>),
+            (false, false) => quote!(FieldResult<#name>),
+            (false, true) => quote!(FieldResult<Vec<#name>>),
+        }
     }
 
     fn use_module_token(&self) -> TokenStream {

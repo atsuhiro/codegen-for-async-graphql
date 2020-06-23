@@ -1,5 +1,8 @@
-use crate::parser;
-use crate::template::{generate_file, generate_object_type_file, generate_token_stream};
+use crate::template::{
+    generate_mod_file, generate_object_type_file, generate_object_types_token_stream,
+    generate_scalar_type_file, BuildingStatus,
+};
+use async_graphql_parser::schema::Document;
 
 use super::DefinitionMatcher;
 use proc_macro2::TokenStream;
@@ -10,16 +13,32 @@ pub struct Config {
 }
 
 pub fn generate_token_from_string(schema: &str, _config: &Config) -> Vec<TokenStream> {
-    let doc = parser::parse(schema);
-    let object_types = doc.transform();
-    generate_token_stream(&object_types)
+    let doc = Document::parse(schema);
+    let mut building_status = BuildingStatus {
+        scalars: vec![],
+        object_types: vec![],
+    };
+    generate_object_types_token_stream(&doc, &mut building_status)
 }
 
 pub fn generate_file_from_string(schema: &str, config: &Config) {
-    let doc = parser::parse(schema);
-    let object_types = doc.transform();
-    let names = generate_object_type_file(&object_types, config);
-    generate_file(&names, config);
+    let mut names: Vec<String> = vec![];
+    let doc = Document::parse(schema);
+    let mut building_status = BuildingStatus {
+        scalars: vec![],
+        object_types: vec![],
+    };
+
+    names.extend(generate_scalar_type_file(&doc, config));
+    names.extend(generate_object_type_file(
+        &doc,
+        config,
+        &mut building_status,
+    ));
+
+    println!("{:?}", building_status);
+
+    generate_mod_file(&names, config);
     println!("{:?}", names);
 }
 

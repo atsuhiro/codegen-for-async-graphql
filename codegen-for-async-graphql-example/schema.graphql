@@ -7,8 +7,16 @@ type Root {
   active: Bool!
 }
 
+scalar Url
+
+type Friend {
+  id: ID!
+  name: String!
+}
+
 type FriendConnection {
   totalCount: Int!
+  nodes: [Friend]!
 }
 
 type Me {
@@ -19,4 +27,10 @@ type Me {
   age: Int
   active: Bool
   friends: FriendConnection!
+  notifications: [Notification]
+}
+
+type Notification {
+  id: ID!
+  title: String!
 }

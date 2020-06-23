@@ -1,4 +1,5 @@
 use super::friend_connection::FriendConnection;
+use super::notification::Notification;
 use super::DataSource;
 use async_graphql::{Context, FieldResult, Object, ID};
 #[derive(Debug)]
@@ -14,6 +15,9 @@ pub struct Me {
 impl Me {
     async fn friends(&self, ctx: &Context<'_>) -> FriendConnection {
         ctx.data::<DataSource>().friends()
+    }
+    async fn notifications(&self, ctx: &Context<'_>) -> FieldResult<Vec<Notification>> {
+        ctx.data::<DataSource>().notifications()
     }
     async fn id(&self) -> ID {
         self.id.clone()
