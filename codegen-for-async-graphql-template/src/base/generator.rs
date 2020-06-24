@@ -22,24 +22,17 @@ pub fn generate_token_from_string(schema: &str, _config: &Config) -> Vec<TokenSt
 }
 
 pub fn generate_file_from_string(schema: &str, config: &Config) {
-    let mut names: Vec<String> = vec![];
     let doc = Document::parse(schema);
     let mut building_status = BuildingStatus {
         scalars: vec![],
         object_types: vec![],
     };
 
-    names.extend(generate_scalar_type_file(&doc, config));
-    names.extend(generate_object_type_file(
-        &doc,
-        config,
-        &mut building_status,
-    ));
+    generate_scalar_type_file(&doc, config, &mut building_status);
+    generate_object_type_file(&doc, config, &mut building_status);
 
+    generate_mod_file(&building_status, config);
     println!("{:?}", building_status);
-
-    generate_mod_file(&names, config);
-    println!("{:?}", names);
 }
 
 #[test]

@@ -4,12 +4,13 @@ use async_graphql_parser::schema::ScalarType;
 
 use proc_macro2::{Ident, Span, TokenStream};
 
-use super::{snake_case, Save};
+use super::{snake_case, BuildingScalar, BuildingStatus, Save};
+
 use crate::Config;
 
 pub trait Extension {
     fn scalar_struct_name(&self) -> String;
-    fn to_model_file(&self, config: &Config) -> String;
+    fn to_model_file(&self, config: &Config, building_status: &mut BuildingStatus) -> String;
 }
 
 impl Extension for ScalarType
@@ -20,8 +21,8 @@ where
         self.name.node.clone()
     }
 
-    fn to_model_file(&self, config: &Config) -> String {
-        let src = self.to_token_stream();
+    fn to_model_file(&self, config: &Config, building_status: &mut BuildingStatus) -> String {
+        let src = self.to_token_stream(building_status);
         let name = snake_case(&self.scalar_struct_name());
         let output_path = &config.output_bnase_path;
         Self::save(&name, &src.to_string(), output_path);
@@ -30,18 +31,26 @@ where
 }
 
 pub trait TokenStreamExt {
-    fn to_token_stream(&self) -> TokenStream;
+    fn to_token_stream(&self, building_status: &mut BuildingStatus) -> TokenStream;
 }
 
 impl TokenStreamExt for ScalarType {
-    fn to_token_stream(&self) -> TokenStream {
+    fn to_token_stream(&self, building_status: &mut BuildingStatus) -> TokenStream {
         let struct_name = Ident::new(&self.scalar_struct_name(), Span::call_site());
+
+        let bot = BuildingScalar {
+            path: snake_case(&self.scalar_struct_name()),
+            name: self.scalar_struct_name(),
+        };
+        building_status.scalars.push(bot);
 
         quote!(
             use async_graphql::*;
-            struct #struct_name(String);
 
-            #[Scalar(internal)]
+            #[derive(Debug, Clone)]
+            pub struct #struct_name(pub String);
+
+            #[Scalar]
             impl ScalarType for #struct_name {
                 fn parse(value: Value) -> InputValueResult<Self> {
                     match value {

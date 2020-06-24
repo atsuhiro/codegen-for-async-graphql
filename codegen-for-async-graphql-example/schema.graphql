@@ -28,6 +28,7 @@ type Me {
   active: Bool
   friends: FriendConnection!
   notifications: [Notification]
+  web: Url
 }
 
 type Notification {

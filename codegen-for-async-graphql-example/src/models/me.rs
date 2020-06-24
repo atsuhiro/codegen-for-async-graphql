@@ -1,5 +1,6 @@
 use super::friend_connection::FriendConnection;
 use super::notification::Notification;
+use super::url::*;
 use super::DataSource;
 use async_graphql::{Context, FieldResult, Object, ID};
 #[derive(Debug)]
@@ -10,6 +11,7 @@ pub struct Me {
     pub email: FieldResult<String>,
     pub age: FieldResult<i32>,
     pub active: FieldResult<bool>,
+    pub web: FieldResult<Url>,
 }
 #[Object]
 impl Me {
@@ -36,5 +38,8 @@ impl Me {
     }
     async fn active(&self) -> FieldResult<bool> {
         self.active.clone()
+    }
+    async fn web(&self) -> FieldResult<Url> {
+        self.web.clone()
     }
 }

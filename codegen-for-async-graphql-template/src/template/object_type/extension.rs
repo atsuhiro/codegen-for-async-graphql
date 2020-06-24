@@ -13,12 +13,12 @@ use super::{FieldExt, FieldTokenStreamExt};
 use super::{BuildingObjectType, BuildingStatus};
 
 pub trait Extension {
-    fn custom_fields(&self) -> Vec<&Field>;
+    fn custom_fields(&self, building_status: &mut BuildingStatus) -> Vec<&Field>;
     fn description(&self) -> Option<&String>;
     fn fields(&self) -> Vec<&Field>;
-    fn field_partition(&self) -> (Vec<&Field>, Vec<&Field>);
+    fn field_partition(&self, building_status: &mut BuildingStatus) -> (Vec<&Field>, Vec<&Field>);
     fn name(&self) -> &String;
-    fn scalar_fields(&self) -> Vec<&Field>;
+    fn scalar_fields(&self, building_status: &mut BuildingStatus) -> Vec<&Field>;
     fn to_model_file(&self, config: &Config, building_status: &mut BuildingStatus) -> String;
 }
 
@@ -40,16 +40,18 @@ impl Extension for ObjectType {
         vec
     }
 
-    fn field_partition(&self) -> (Vec<&Field>, Vec<&Field>) {
-        self.fields().iter().partition(|f| f.is_scalar())
+    fn field_partition(&self, building_status: &mut BuildingStatus) -> (Vec<&Field>, Vec<&Field>) {
+        self.fields()
+            .iter()
+            .partition(|f| f.is_scalar(building_status))
     }
 
-    fn custom_fields(&self) -> Vec<&Field> {
-        self.field_partition().1
+    fn custom_fields(&self, building_status: &mut BuildingStatus) -> Vec<&Field> {
+        self.field_partition(building_status).1
     }
 
-    fn scalar_fields(&self) -> Vec<&Field> {
-        self.field_partition().0
+    fn scalar_fields(&self, building_status: &mut BuildingStatus) -> Vec<&Field> {
+        self.field_partition(building_status).0
     }
 
     fn to_model_file(&self, config: &Config, building_status: &mut BuildingStatus) -> String {
@@ -62,11 +64,23 @@ impl Extension for ObjectType {
 }
 
 pub trait TokenStreamExt {
-    fn generate_uses(field: &Field, uses: &TokenStream) -> TokenStream;
-    fn custom_fields_token(&self, users: TokenStream) -> (TokenStream, TokenStream);
+    fn generate_uses(
+        field: &Field,
+        uses: &TokenStream,
+        building_status: &mut BuildingStatus,
+    ) -> TokenStream;
+    fn custom_fields_token(
+        &self,
+        uses: TokenStream,
+        building_status: &mut BuildingStatus,
+    ) -> (TokenStream, TokenStream);
     fn name_token(&self) -> TokenStream;
-    fn scalar_fields_token(&self) -> TokenStream;
-    fn struct_properties_token(&self) -> TokenStream;
+    fn scalar_fields_token(
+        &self,
+        uses: TokenStream,
+        building_status: &mut BuildingStatus,
+    ) -> (TokenStream, TokenStream);
+    fn struct_properties_token(&self, building_status: &mut BuildingStatus) -> TokenStream;
     fn to_token_stream(&self, building_status: &mut BuildingStatus) -> TokenStream;
 }
 
@@ -74,11 +88,15 @@ impl TokenStreamExt for ObjectType
 where
     ObjectType: Save,
 {
-    fn generate_uses(field: &Field, uses: &TokenStream) -> TokenStream {
-        match field.module_name() {
+    fn generate_uses(
+        field: &Field,
+        uses: &TokenStream,
+        building_status: &mut BuildingStatus,
+    ) -> TokenStream {
+        match field.module_name(building_status) {
             None => uses.clone(),
             Some(_t) => {
-                let use_name = field.use_module_token();
+                let use_name = field.use_module_token(building_status);
                 quote! {
                     #uses
                     #use_name
@@ -87,11 +105,15 @@ where
         }
     }
 
-    fn custom_fields_token(&self, mut uses: TokenStream) -> (TokenStream, TokenStream) {
+    fn custom_fields_token(
+        &self,
+        mut uses: TokenStream,
+        building_status: &mut BuildingStatus,
+    ) -> (TokenStream, TokenStream) {
         let mut fields = quote! {};
-        self.custom_fields().iter().for_each(|f| {
-            uses = Self::generate_uses(f, &uses);
-            let field = &f.custom_field_token();
+        self.custom_fields(building_status).iter().for_each(|f| {
+            uses = Self::generate_uses(f, &uses, building_status);
+            let field = &f.custom_field_token(building_status);
             fields = quote!(
                 #fields
                 #field
@@ -105,22 +127,36 @@ where
         quote!(#name)
     }
 
-    fn scalar_fields_token(&self) -> TokenStream {
+    fn scalar_fields_token(
+        &self,
+        mut uses: TokenStream,
+        building_status: &mut BuildingStatus,
+    ) -> (TokenStream, TokenStream) {
         let mut scalar_fields = quote! {};
-        self.scalar_fields().iter().for_each(|f| {
-            let field = f.scalar_fields_token();
+        self.scalar_fields(building_status).iter().for_each(|f| {
+            let field = f.scalar_fields_token(building_status);
             scalar_fields = quote!(
                 #scalar_fields
                 #field
             );
+            if f.is_custom_scalar(building_status) {
+                let mod_name = Ident::new(
+                    &snake_case(&f.struct_type_name(building_status)),
+                    Span::call_site(),
+                );
+                uses = quote!(
+                    use super::#mod_name::*;
+                    #uses
+                )
+            }
         });
-        scalar_fields
+        (scalar_fields, uses)
     }
 
-    fn struct_properties_token(&self) -> TokenStream {
+    fn struct_properties_token(&self, building_status: &mut BuildingStatus) -> TokenStream {
         let mut properties = quote! {};
-        self.scalar_fields().iter().for_each(|f| {
-            let field_property = f.field_property_token();
+        self.scalar_fields(building_status).iter().for_each(|f| {
+            let field_property = f.field_property_token(building_status);
             properties = quote!(
                 #properties
                 #field_property
@@ -137,9 +173,9 @@ where
             use super::DataSource;
         };
 
-        let (fields, uses) = self.custom_fields_token(uses);
-        let struct_properties = self.struct_properties_token();
-        let scalar_fields_token = self.scalar_fields_token();
+        let (fields, uses) = self.custom_fields_token(uses, building_status);
+        let struct_properties = self.struct_properties_token(building_status);
+        let (scalar_fields_token, uses) = self.scalar_fields_token(uses, building_status);
 
         let bot = BuildingObjectType {
             path: snake_case(self.name()),

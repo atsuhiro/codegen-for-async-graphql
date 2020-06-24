@@ -5,6 +5,7 @@ mod models;
 use async_graphql::*;
 use async_std::task;
 use models::root::Root;
+use models::url::Url;
 
 #[derive(Debug, Clone, Copy)]
 pub struct DataSource {}
@@ -18,6 +19,7 @@ impl DataSource {
             rank: 5.1,
             age: Ok(30),
             active: Ok(true),
+            web: Ok(Url("https://github.com/".to_string())),
         }
     }
 
@@ -67,6 +69,7 @@ async fn run() {
                 rank
                 age
                 active
+                web
                 friends {
                     totalCount
                     nodes {
