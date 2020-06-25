@@ -4,22 +4,21 @@ use async_graphql_parser::schema::{Field, ObjectType};
 
 use proc_macro2::{Ident, Span, TokenStream};
 
-use super::Save;
-use crate::Config;
+use super::{Context, Save};
 
 use super::snake_case;
 use super::{FieldExt, FieldTokenStreamExt};
 
-use super::{BuildingObjectType, BuildingStatus};
+use super::BuildingObjectType;
 
 pub trait Extension {
-    fn custom_fields(&self, building_status: &mut BuildingStatus) -> Vec<&Field>;
+    fn custom_fields(&self, context: &mut Context) -> Vec<&Field>;
     fn description(&self) -> Option<&String>;
     fn fields(&self) -> Vec<&Field>;
-    fn field_partition(&self, building_status: &mut BuildingStatus) -> (Vec<&Field>, Vec<&Field>);
+    fn field_partition(&self, context: &mut Context) -> (Vec<&Field>, Vec<&Field>);
     fn name(&self) -> &String;
-    fn scalar_fields(&self, building_status: &mut BuildingStatus) -> Vec<&Field>;
-    fn to_model_file(&self, config: &Config, building_status: &mut BuildingStatus) -> String;
+    fn scalar_fields(&self, context: &mut Context) -> Vec<&Field>;
+    fn to_model_file(&self, context: &mut Context) -> String;
 }
 
 impl Extension for ObjectType {
@@ -40,63 +39,54 @@ impl Extension for ObjectType {
         vec
     }
 
-    fn field_partition(&self, building_status: &mut BuildingStatus) -> (Vec<&Field>, Vec<&Field>) {
+    fn field_partition(&self, context: &mut Context) -> (Vec<&Field>, Vec<&Field>) {
         self.fields()
             .iter()
-            .partition(|f| f.is_scalar(building_status))
+            .partition(|f| f.gql_ty(context).is_scalar)
     }
 
-    fn custom_fields(&self, building_status: &mut BuildingStatus) -> Vec<&Field> {
-        self.field_partition(building_status).1
+    fn custom_fields(&self, context: &mut Context) -> Vec<&Field> {
+        self.field_partition(context).1
     }
 
-    fn scalar_fields(&self, building_status: &mut BuildingStatus) -> Vec<&Field> {
-        self.field_partition(building_status).0
+    fn scalar_fields(&self, context: &mut Context) -> Vec<&Field> {
+        self.field_partition(context).0
     }
 
-    fn to_model_file(&self, config: &Config, building_status: &mut BuildingStatus) -> String {
-        let src = self.to_token_stream(building_status);
+    fn to_model_file(&self, context: &mut Context) -> String {
+        let src = self.to_token_stream(context);
         let name = snake_case(self.name());
-        let output_path = &config.output_bnase_path;
-        Self::save(&name, &src.to_string(), output_path);
+        Self::save(&name, &src.to_string(), context);
         name
     }
 }
 
 pub trait TokenStreamExt {
-    fn generate_uses(
-        field: &Field,
-        uses: &TokenStream,
-        building_status: &mut BuildingStatus,
-    ) -> TokenStream;
+    fn generate_uses(field: &Field, uses: &TokenStream, context: &mut Context) -> TokenStream;
     fn custom_fields_token(
         &self,
         uses: TokenStream,
-        building_status: &mut BuildingStatus,
+        context: &mut Context,
     ) -> (TokenStream, TokenStream);
     fn name_token(&self) -> TokenStream;
     fn scalar_fields_token(
         &self,
         uses: TokenStream,
-        building_status: &mut BuildingStatus,
+        context: &mut Context,
     ) -> (TokenStream, TokenStream);
-    fn struct_properties_token(&self, building_status: &mut BuildingStatus) -> TokenStream;
-    fn to_token_stream(&self, building_status: &mut BuildingStatus) -> TokenStream;
+    fn struct_properties_token(&self, context: &mut Context) -> TokenStream;
+    fn to_token_stream(&self, context: &mut Context) -> TokenStream;
 }
 
 impl TokenStreamExt for ObjectType
 where
     ObjectType: Save,
 {
-    fn generate_uses(
-        field: &Field,
-        uses: &TokenStream,
-        building_status: &mut BuildingStatus,
-    ) -> TokenStream {
-        match field.module_name(building_status) {
+    fn generate_uses(field: &Field, uses: &TokenStream, context: &mut Context) -> TokenStream {
+        match field.module_name(context) {
             None => uses.clone(),
             Some(_t) => {
-                let use_name = field.use_module_token(building_status);
+                let use_name = field.use_module_token(context);
                 quote! {
                     #uses
                     #use_name
@@ -108,12 +98,12 @@ where
     fn custom_fields_token(
         &self,
         mut uses: TokenStream,
-        building_status: &mut BuildingStatus,
+        context: &mut Context,
     ) -> (TokenStream, TokenStream) {
         let mut fields = quote! {};
-        self.custom_fields(building_status).iter().for_each(|f| {
-            uses = Self::generate_uses(f, &uses, building_status);
-            let field = &f.custom_field_token(building_status);
+        self.custom_fields(context).iter().for_each(|f| {
+            uses = Self::generate_uses(f, &uses, context);
+            let field = &f.custom_field_token(context);
             fields = quote!(
                 #fields
                 #field
@@ -130,20 +120,18 @@ where
     fn scalar_fields_token(
         &self,
         mut uses: TokenStream,
-        building_status: &mut BuildingStatus,
+        context: &mut Context,
     ) -> (TokenStream, TokenStream) {
         let mut scalar_fields = quote! {};
-        self.scalar_fields(building_status).iter().for_each(|f| {
-            let field = f.scalar_fields_token(building_status);
+        self.scalar_fields(context).iter().for_each(|f| {
+            let field = f.scalar_fields_token(context);
             scalar_fields = quote!(
                 #scalar_fields
                 #field
             );
-            if f.is_custom_scalar(building_status) {
-                let mod_name = Ident::new(
-                    &snake_case(&f.struct_type_name(building_status)),
-                    Span::call_site(),
-                );
+            let gql_ty = f.gql_ty(context);
+            if gql_ty.is_custom_scalar {
+                let mod_name = Ident::new(&snake_case(&gql_ty.code_type_name), Span::call_site());
                 uses = quote!(
                     use super::#mod_name::*;
                     #uses
@@ -153,10 +141,10 @@ where
         (scalar_fields, uses)
     }
 
-    fn struct_properties_token(&self, building_status: &mut BuildingStatus) -> TokenStream {
+    fn struct_properties_token(&self, context: &mut Context) -> TokenStream {
         let mut properties = quote! {};
-        self.scalar_fields(building_status).iter().for_each(|f| {
-            let field_property = f.field_property_token(building_status);
+        self.scalar_fields(context).iter().for_each(|f| {
+            let field_property = f.field_property_token(context);
             properties = quote!(
                 #properties
                 #field_property
@@ -165,7 +153,7 @@ where
         properties
     }
 
-    fn to_token_stream(&self, building_status: &mut BuildingStatus) -> TokenStream {
+    fn to_token_stream(&self, context: &mut Context) -> TokenStream {
         let name = self.name_token();
 
         let uses = quote! {
@@ -173,15 +161,15 @@ where
             use super::DataSource;
         };
 
-        let (fields, uses) = self.custom_fields_token(uses, building_status);
-        let struct_properties = self.struct_properties_token(building_status);
-        let (scalar_fields_token, uses) = self.scalar_fields_token(uses, building_status);
+        let (fields, uses) = self.custom_fields_token(uses, context);
+        let struct_properties = self.struct_properties_token(context);
+        let (scalar_fields_token, uses) = self.scalar_fields_token(uses, context);
 
         let bot = BuildingObjectType {
             path: snake_case(self.name()),
             name: snake_case(self.name()),
         };
-        building_status.object_types.push(bot);
+        context.building_status.object_types.push(bot);
 
         quote!(
             #uses

@@ -1,8 +1,7 @@
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 
-use super::{BuildingStatus, Save};
-use crate::Config;
+use super::{Context, Save};
 
 struct Mod;
 impl Save for Mod {}
@@ -21,10 +20,9 @@ fn generate_token_stream(names: &[String]) -> TokenStream {
     src
 }
 
-pub fn generate_file(building_status: &BuildingStatus, config: &Config) {
-    let names = building_status.names();
+pub fn generate_file(context: &Context) {
+    let names = context.building_status.names();
     let src = generate_token_stream(&names);
     let name = "mod".to_string();
-    let output_path = &config.output_bnase_path;
-    Mod::save(&name, &src.to_string(), output_path);
+    Mod::save(&name, &src.to_string(), context);
 }

@@ -1,16 +1,13 @@
-use async_graphql_parser::schema::{Document, ObjectType};
-
-use crate::parser::DefinitionMatcher;
+use async_graphql_parser::schema::ObjectType;
 
 use proc_macro2::TokenStream;
 
 use super::Save;
-use crate::Config;
 
 impl Save for ObjectType {}
 
 use super::utils::snake_case;
-pub use super::{BuildingObjectType, BuildingStatus};
+pub use super::{BuildingObjectType, BuildingStatus, Context};
 
 mod extension;
 use extension::Extension as ObjectTypeExt;
@@ -20,23 +17,20 @@ mod field;
 use field::Extension as FieldExt;
 use field::TokenStreamExt as FieldTokenStreamExt;
 
-pub fn generate_object_type_file(
-    doc: &Document,
-    config: &Config,
-    building_status: &mut BuildingStatus,
-) -> Vec<String> {
-    doc.object_types()
+pub fn generate_object_type_file(context: &mut Context) -> Vec<String> {
+    context
+        .clone()
+        .object_types()
         .iter()
-        .map(|f| f.to_model_file(config, building_status))
+        .map(|f| f.doc.to_model_file(context))
         .collect()
 }
 
-pub fn generate_object_types_token_stream(
-    doc: &Document,
-    building_status: &mut BuildingStatus,
-) -> Vec<TokenStream> {
-    doc.object_types()
+pub fn generate_object_types_token_stream(context: &mut Context) -> Vec<TokenStream> {
+    context
+        .clone()
+        .object_types()
         .iter()
-        .map(|f| f.to_token_stream(building_status))
+        .map(|f| f.doc.to_token_stream(context))
         .collect()
 }

@@ -2,37 +2,46 @@ use crate::template::{
     generate_mod_file, generate_object_type_file, generate_object_types_token_stream,
     generate_scalar_type_file, BuildingStatus,
 };
+use async_graphql_parser::parse_schema;
 use async_graphql_parser::schema::Document;
 
-use super::DefinitionMatcher;
+use super::{Config, Context};
 use proc_macro2::TokenStream;
 
-#[derive(Debug)]
-pub struct Config {
-    pub output_bnase_path: String,
+fn parse(schema: &str) -> Document {
+    match parse_schema(schema) {
+        Ok(f) => f,
+        Err(e) => {
+            println!("{}", e);
+            panic!("Parse Error: {:?}", e);
+        }
+    }
 }
 
-pub fn generate_token_from_string(schema: &str, _config: &Config) -> Vec<TokenStream> {
-    let doc = Document::parse(schema);
-    let mut building_status = BuildingStatus {
+pub fn generate_token_from_string(schema: &str, config: &Config) -> Vec<TokenStream> {
+    let doc = parse(schema);
+    let building_status = BuildingStatus {
         scalars: vec![],
         object_types: vec![],
     };
-    generate_object_types_token_stream(&doc, &mut building_status)
+    let mut context = Context::new(config, building_status, &doc);
+    generate_object_types_token_stream(&mut context)
 }
 
 pub fn generate_file_from_string(schema: &str, config: &Config) {
-    let doc = Document::parse(schema);
-    let mut building_status = BuildingStatus {
+    let doc = parse(schema);
+    let building_status = BuildingStatus {
         scalars: vec![],
         object_types: vec![],
     };
 
-    generate_scalar_type_file(&doc, config, &mut building_status);
-    generate_object_type_file(&doc, config, &mut building_status);
+    let mut context = Context::new(config, building_status, &doc);
 
-    generate_mod_file(&building_status, config);
-    println!("{:?}", building_status);
+    generate_scalar_type_file(&mut context);
+    generate_object_type_file(&mut context);
+
+    generate_mod_file(&context);
+    println!("{:?}", context.building_status);
 }
 
 #[test]

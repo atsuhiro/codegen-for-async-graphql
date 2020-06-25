@@ -6,56 +6,66 @@ use proc_macro2::{Ident, Span, TokenStream};
 
 use super::snake_case;
 
-use super::BuildingStatus;
+use super::Context;
 
 pub struct GQLType {
-    name: String,
-    non_null: bool,
-    is_list: bool,
-    code_type_name: String,
-    is_scalar: bool,
+    pub name: String,
+    pub non_null: bool,
+    pub is_list: bool,
+    pub code_type_name: String,
+    pub is_scalar: bool,
+    pub is_custom_scalar: bool,
+    pub is_default_scalar: bool,
 }
 
 impl GQLType {
-    fn new(
-        name: &str,
-        non_null: bool,
-        is_list: bool,
-        building_status: &mut BuildingStatus,
-    ) -> Self {
+    fn new(name: &str, non_null: bool, is_list: bool, context: &mut Context) -> Self {
         Self {
             name: name.to_string(),
             non_null,
             is_list,
             code_type_name: Self::struct_type_name(name),
-            is_scalar: Self::is_scalar(name, building_status),
+            is_scalar: Self::is_scalar(name, context),
+            is_custom_scalar: Self::is_custom_scalar(name, context),
+            is_default_scalar: Self::is_default_scalar(name, context),
         }
     }
 
-    fn from_type(ty: &Type, building_status: &mut BuildingStatus) -> Self {
-        Self::from_type_with_non_null(ty, false, building_status)
+    fn from_type(ty: &Type, context: &mut Context) -> Self {
+        Self::from_type_with_non_null(ty, false, context)
     }
 
-    fn from_type_with_non_null(
-        ty: &Type,
-        non_null: bool,
-        building_status: &mut BuildingStatus,
-    ) -> Self {
+    fn from_type_with_non_null(ty: &Type, non_null: bool, context: &mut Context) -> Self {
         match ty {
-            Type::Named(name) => Self::new(name, non_null, false, building_status),
-            Type::NonNull(t) => Self::from_type_with_non_null(t, true, building_status),
+            Type::Named(name) => Self::new(name, non_null, false, context),
+            Type::NonNull(t) => Self::from_type_with_non_null(t, true, context),
             Type::List(t) => match &**t {
-                Type::Named(name) => Self::new(name, non_null, true, building_status),
+                Type::Named(name) => Self::new(name, non_null, true, context),
                 _ => unreachable!("Not Implemented"),
             },
         }
     }
 
-    fn is_scalar(name: &str, building_status: &mut BuildingStatus) -> bool {
-        let names = building_status.scalar_names();
+    fn is_scalar(name: &str, context: &mut Context) -> bool {
+        let names = context.building_status.scalar_names();
         match name {
             "String" | "Bool" | "Int" | "Float" | "ID" => true,
             _ => names.iter().any(|f| f == name),
+        }
+    }
+
+    fn is_custom_scalar(name: &str, context: &mut Context) -> bool {
+        let names = context.building_status.scalar_names();
+        match name {
+            "String" | "Bool" | "Int" | "Float" | "ID" => false,
+            _ => names.iter().any(|f| f == name),
+        }
+    }
+
+    fn is_default_scalar(name: &str, _context: &mut Context) -> bool {
+        match name {
+            "String" | "Bool" | "Int" | "Float" | "ID" => true,
+            _ => false,
         }
     }
 
@@ -71,70 +81,35 @@ impl GQLType {
 }
 
 pub trait Extension {
-    fn module_name(&self, building_status: &mut BuildingStatus) -> Option<String>;
-    fn is_custom_scalar(&self, building_status: &mut BuildingStatus) -> bool;
-    fn is_list(&self, building_status: &mut BuildingStatus) -> bool;
-    fn is_scalar(&self, building_status: &mut BuildingStatus) -> bool;
-    fn non_null(&self, building_status: &mut BuildingStatus) -> bool;
+    fn module_name(&self, context: &mut Context) -> Option<String>;
     fn snaked_field_name(&self) -> String;
-    fn struct_type_name(&self, building_status: &mut BuildingStatus) -> String;
-    fn ty(&self, uilding_status: &mut BuildingStatus) -> GQLType;
-    fn type_name(&self, building_status: &mut BuildingStatus) -> String;
+    fn gql_ty(&self, context: &mut Context) -> GQLType;
 }
 
 impl Extension for Field {
-    fn is_scalar(&self, building_status: &mut BuildingStatus) -> bool {
-        self.ty(building_status).is_scalar
-    }
-
-    fn non_null(&self, building_status: &mut BuildingStatus) -> bool {
-        self.ty(building_status).non_null
-    }
-
-    fn is_list(&self, building_status: &mut BuildingStatus) -> bool {
-        self.ty(building_status).is_list
-    }
-
-    fn is_custom_scalar(&self, building_status: &mut BuildingStatus) -> bool {
-        let names = building_status.scalar_names();
-        let name = self.struct_type_name(building_status);
-        match name.as_str() {
-            "String" | "Bool" | "Int" | "Float" | "ID" => false,
-            _ => names.iter().any(|f| f == name.as_str()),
-        }
-    }
-
-    fn module_name(&self, building_status: &mut BuildingStatus) -> Option<String> {
-        if self.is_scalar(building_status) {
+    fn module_name(&self, context: &mut Context) -> Option<String> {
+        if self.gql_ty(context).is_default_scalar {
             return None;
         }
-        Some(snake_case(&self.type_name(building_status)))
+        Some(snake_case(&self.gql_ty(context).code_type_name))
     }
 
     fn snaked_field_name(&self) -> String {
         snake_case(&self.name.node)
     }
 
-    fn struct_type_name(&self, building_status: &mut BuildingStatus) -> String {
-        self.ty(building_status).code_type_name
-    }
-
-    fn type_name(&self, building_status: &mut BuildingStatus) -> String {
-        self.ty(building_status).name
-    }
-
-    fn ty(&self, building_status: &mut BuildingStatus) -> GQLType {
-        GQLType::from_type(&self.ty.node, building_status)
+    fn gql_ty(&self, context: &mut Context) -> GQLType {
+        GQLType::from_type(&self.ty.node, context)
     }
 }
 
 pub trait TokenStreamExt {
-    fn custom_field_token(&self, building_status: &mut BuildingStatus) -> TokenStream;
+    fn custom_field_token(&self, context: &mut Context) -> TokenStream;
     fn field_name_token(&self) -> TokenStream;
-    fn field_property_token(&self, building_status: &mut BuildingStatus) -> TokenStream;
-    fn scalar_fields_token(&self, building_status: &mut BuildingStatus) -> TokenStream;
-    fn struct_name_token(&self, building_status: &mut BuildingStatus) -> TokenStream;
-    fn use_module_token(&self, building_status: &mut BuildingStatus) -> TokenStream;
+    fn field_property_token(&self, context: &mut Context) -> TokenStream;
+    fn scalar_fields_token(&self, context: &mut Context) -> TokenStream;
+    fn struct_name_token(&self, context: &mut Context) -> TokenStream;
+    fn use_module_token(&self, context: &mut Context) -> TokenStream;
 }
 
 impl TokenStreamExt for Field {
@@ -143,9 +118,9 @@ impl TokenStreamExt for Field {
         quote!(#name)
     }
 
-    fn custom_field_token(&self, building_status: &mut BuildingStatus) -> TokenStream {
+    fn custom_field_token(&self, context: &mut Context) -> TokenStream {
         let n = &self.field_name_token();
-        let ty = &self.struct_name_token(building_status);
+        let ty = &self.struct_name_token(context);
         quote!(
             async fn #n(&self, ctx: &Context<'_>) -> #ty {
                 ctx.data::<DataSource>().#n()
@@ -153,30 +128,28 @@ impl TokenStreamExt for Field {
         )
     }
 
-    fn scalar_fields_token(&self, building_status: &mut BuildingStatus) -> TokenStream {
+    fn scalar_fields_token(&self, context: &mut Context) -> TokenStream {
         let n = &self.field_name_token();
-        let ty = &self.struct_name_token(building_status);
+        let ty = &self.struct_name_token(context);
         quote!(
             async fn #n(&self) -> #ty {
                 self.#n.clone()
             }
         )
     }
-    fn field_property_token(&self, building_status: &mut BuildingStatus) -> TokenStream {
+    fn field_property_token(&self, context: &mut Context) -> TokenStream {
         let n = &self.field_name_token();
-        let ty = &self.struct_name_token(building_status);
+        let ty = &self.struct_name_token(context);
         quote!(
            pub #n : #ty
         )
     }
 
-    fn struct_name_token(&self, building_status: &mut BuildingStatus) -> TokenStream {
-        let name = self.struct_type_name(building_status);
+    fn struct_name_token(&self, context: &mut Context) -> TokenStream {
+        let gql_ty = self.gql_ty(context);
+        let name = gql_ty.code_type_name;
         let name = Ident::new(&name, Span::call_site());
-        match (
-            self.non_null(building_status),
-            self.is_list(building_status),
-        ) {
+        match (gql_ty.non_null, gql_ty.is_list) {
             (true, false) => quote!(#name),
             (true, true) => quote!(Vec<#name>),
             (false, false) => quote!(FieldResult<#name>),
@@ -184,12 +157,12 @@ impl TokenStreamExt for Field {
         }
     }
 
-    fn use_module_token(&self, building_status: &mut BuildingStatus) -> TokenStream {
+    fn use_module_token(&self, context: &mut Context) -> TokenStream {
         let module_name = Ident::new(
-            &self.module_name(building_status).expect("Unreachable"),
+            &self.module_name(context).expect("Unreachable"),
             Span::call_site(),
         );
-        let name = Ident::new(&self.type_name(building_status), Span::call_site());
+        let name = Ident::new(&self.gql_ty(context).name, Span::call_site());
         quote! {
             use super::#module_name::#name;
         }
