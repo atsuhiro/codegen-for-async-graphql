@@ -1,46 +1,42 @@
-use quote::quote;
-
 use async_graphql_parser::schema::ScalarType;
+
+use super::{Context, RenderType, RendererScalarType, Save};
+
+impl Save for ScalarType {}
+
+use quote::quote;
 
 use proc_macro2::{Ident, Span, TokenStream};
 
-use super::{snake_case, BuildingScalar, Context, Save};
-
-pub trait Extension {
-    fn scalar_struct_name(&self) -> String;
-    fn to_model_file(&self, context: &mut Context) -> String;
+pub struct Renderer<'a> {
+    renderer_scalar_type: &'a RendererScalarType<'a>,
 }
 
-impl Extension for ScalarType
-where
-    ScalarType: Save,
-{
-    fn scalar_struct_name(&self) -> String {
-        self.name.node.clone()
+impl<'a> Renderer<'a> {
+    pub fn model_file(renderer_scalar_type: &'a RendererScalarType<'a>, context: &'a mut Context) {
+        let src = Renderer::token_stream(renderer_scalar_type);
+        let file_name = renderer_scalar_type.file_name();
+        ScalarType::save(&file_name, &src.to_string(), context);
     }
 
-    fn to_model_file(&self, context: &mut Context) -> String {
-        let src = self.to_token_stream(context);
-        let name = snake_case(&self.scalar_struct_name());
-        Self::save(&name, &src.to_string(), context);
-        name
-    }
-}
-
-pub trait TokenStreamExt {
-    fn to_token_stream(&self, context: &mut Context) -> TokenStream;
-}
-
-impl TokenStreamExt for ScalarType {
-    fn to_token_stream(&self, context: &mut Context) -> TokenStream {
-        let struct_name = Ident::new(&self.scalar_struct_name(), Span::call_site());
-
-        let bot = BuildingScalar {
-            path: snake_case(&self.scalar_struct_name()),
-            name: self.scalar_struct_name(),
+    pub fn token_stream(renderer_scalar_type: &'a RendererScalarType<'a>) -> TokenStream {
+        let obj = Renderer {
+            renderer_scalar_type,
         };
-        context.building_status.scalars.push(bot);
 
+        let struct_name = obj.struct_name();
+
+        Self::scalar_code(&struct_name)
+    }
+
+    fn struct_name(&self) -> Ident {
+        Ident::new(
+            &self.renderer_scalar_type.scalar_struct_name(),
+            Span::call_site(),
+        )
+    }
+
+    fn scalar_code(struct_name: &Ident) -> TokenStream {
         quote!(
             use async_graphql::*;
 

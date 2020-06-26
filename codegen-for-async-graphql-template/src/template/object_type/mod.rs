@@ -1,29 +1,22 @@
-use async_graphql_parser::schema::ObjectType;
+mod extension;
+mod field;
 
+use async_graphql_parser::schema::ObjectType;
 use proc_macro2::TokenStream;
 
-use super::Save;
+pub use super::{Context, RenderType, RendererFieldType, RendererObjectType, Save};
+
+use super::utils::snake_case;
+
+use extension::Renderer;
+use field::Renderer as FieldRenderer;
 
 impl Save for ObjectType {}
 
-use super::utils::snake_case;
-pub use super::{BuildingObjectType, BuildingStatus, Context};
-
-mod extension;
-use extension::Extension as ObjectTypeExt;
-use extension::TokenStreamExt as ObjectTypeTokenStreamExt;
-
-mod field;
-use field::Extension as FieldExt;
-use field::TokenStreamExt as FieldTokenStreamExt;
-
-pub fn generate_object_type_file(context: &mut Context) -> Vec<String> {
-    context
-        .clone()
-        .object_types()
-        .iter()
-        .map(|f| f.doc.to_model_file(context))
-        .collect()
+pub fn generate_object_type_file(context: &mut Context) {
+    context.clone().object_types().iter().for_each(|f| {
+        Renderer::model_file(f, context);
+    });
 }
 
 pub fn generate_object_types_token_stream(context: &mut Context) -> Vec<TokenStream> {
@@ -31,6 +24,6 @@ pub fn generate_object_types_token_stream(context: &mut Context) -> Vec<TokenStr
         .clone()
         .object_types()
         .iter()
-        .map(|f| f.doc.to_token_stream(context))
+        .map(|f| Renderer::token_stream(f, context))
         .collect()
 }

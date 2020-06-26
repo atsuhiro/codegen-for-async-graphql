@@ -1,18 +1,25 @@
-mod building_status;
 mod config;
 mod context;
-mod definition_matcher;
+// mod field;
 mod generator;
+mod render_type;
+mod renderer_field_type;
+mod renderer_object_type;
+mod renderer_scalar_type;
 
-pub use building_status::{BuildingObjectType, BuildingScalar, BuildingStatus};
 pub use config::Config;
 pub use context::Context;
 use generator::{generate_file_from_string, generate_token_from_string};
 
-pub use definition_matcher::{DefinitionMatcher, RendererObjectType, RendererScalarType};
+pub use render_type::RenderType;
+pub use renderer_field_type::RendererFieldType;
+pub use renderer_object_type::RendererObjectType;
+pub use renderer_scalar_type::RendererScalarType;
 
 use proc_macro2::TokenStream;
 use std::fs;
+
+use super::snake_case;
 
 #[must_use]
 pub fn generate_token_from_path(path: &str, config: &Config) -> Vec<TokenStream> {

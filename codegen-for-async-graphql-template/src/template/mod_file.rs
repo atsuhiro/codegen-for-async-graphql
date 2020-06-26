@@ -21,7 +21,7 @@ fn generate_token_stream(names: &[String]) -> TokenStream {
 }
 
 pub fn generate_file(context: &Context) {
-    let names = context.building_status.names();
+    let names = context.file_names();
     let src = generate_token_stream(&names);
     let name = "mod".to_string();
     Mod::save(&name, &src.to_string(), context);

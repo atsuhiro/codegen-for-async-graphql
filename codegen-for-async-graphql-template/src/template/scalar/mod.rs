@@ -1,19 +1,11 @@
-use async_graphql_parser::schema::ScalarType;
-
 mod extension;
-use extension::Extension;
 
-use super::{BuildingScalar, Context, Save};
+use super::{Context, RenderType, RendererScalarType, Save};
 
-use super::utils::snake_case;
+use extension::Renderer;
 
-impl Save for ScalarType {}
-
-pub fn generate_scalar_type_file(context: &mut Context) -> Vec<String> {
-    context
-        .clone()
-        .scalar_types()
-        .iter()
-        .map(|f| f.doc.to_model_file(context))
-        .collect()
+pub fn generate_scalar_type_file(context: &mut Context) {
+    context.clone().scalar_types().iter().for_each(|f| {
+        Renderer::model_file(f, context);
+    });
 }
