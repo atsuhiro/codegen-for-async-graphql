@@ -1,7 +1,7 @@
 use super::Context;
 use async_graphql_parser::schema::{Field, Type};
 
-use super::{snake_case, RenderType};
+use super::{snake_case, Dependency, RenderType};
 
 #[derive(Debug, Clone)]
 pub enum ScalarTypeOnScalar {
@@ -142,6 +142,25 @@ impl<'a> RendererFieldType<'a> {
             },
             _ => false,
         }
+    }
+
+    #[must_use]
+    pub fn dependencies(&self) -> Vec<Dependency> {
+        if self.is_custom_scalar() {
+            let dep = Dependency {
+                module_name: self.module_name().unwrap(),
+                name: self.name(),
+            };
+            return vec![dep];
+        }
+        if !self.is_scalar() {
+            let dep = Dependency {
+                module_name: self.module_name().unwrap(),
+                name: self.name(),
+            };
+            return vec![dep];
+        }
+        vec![]
     }
 }
 

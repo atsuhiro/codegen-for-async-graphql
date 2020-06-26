@@ -1,8 +1,8 @@
 use super::friend_connection::FriendConnection;
 use super::notification::Notification;
-use super::url::*;
+use super::url::Url;
 use super::DataSource;
-use async_graphql::{Context, FieldResult, Object, ID};
+use async_graphql::*;
 #[derive(Debug)]
 pub struct Me {
     pub id: ID,

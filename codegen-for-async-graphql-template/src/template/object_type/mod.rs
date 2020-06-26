@@ -6,8 +6,6 @@ use proc_macro2::TokenStream;
 
 pub use super::{Context, RenderType, RendererFieldType, RendererObjectType, Save};
 
-use super::utils::snake_case;
-
 use extension::Renderer;
 use field::Renderer as FieldRenderer;
 

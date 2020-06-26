@@ -1,6 +1,6 @@
 use super::friend::Friend;
 use super::DataSource;
-use async_graphql::{Context, FieldResult, Object, ID};
+use async_graphql::*;
 #[derive(Debug)]
 pub struct FriendConnection {
     pub total_count: i32,

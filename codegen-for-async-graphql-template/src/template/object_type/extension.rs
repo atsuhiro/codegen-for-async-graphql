@@ -4,9 +4,7 @@ use async_graphql_parser::schema::ObjectType;
 
 use proc_macro2::{Ident, Span, TokenStream};
 
-use super::{
-    snake_case, Context, FieldRenderer, RenderType, RendererFieldType, RendererObjectType, Save,
-};
+use super::{Context, FieldRenderer, RenderType, RendererObjectType, Save};
 
 pub struct Renderer<'a, 'b> {
     context: &'a mut Context<'b>,
@@ -33,11 +31,11 @@ impl<'a, 'b> Renderer<'a, 'b> {
         };
 
         let name = obj.name_token();
-        let uses = Self::uses();
-        let (fields, uses) = obj.custom_fields_token(uses);
+        let fields = obj.custom_fields_token();
         let struct_properties = obj.struct_properties_token();
+        let scalar_fields_token = obj.scalar_fields_token();
 
-        let (scalar_fields_token, uses) = obj.scalar_fields_token(uses);
+        let uses = obj.uses();
 
         Self::object_type_code(
             &uses,
@@ -48,11 +46,24 @@ impl<'a, 'b> Renderer<'a, 'b> {
         )
     }
 
-    fn uses() -> TokenStream {
-        quote! {
-            use async_graphql::{Context, FieldResult, ID, Object};
+    fn uses(&self) -> TokenStream {
+        let mut res = quote! {
+            use async_graphql::*;
             use super::DataSource;
-        }
+        };
+        self.renderer_object_type
+            .dependencies(self.context)
+            .iter()
+            .for_each(|f| {
+                let module_name = Ident::new(&f.module_name, Span::call_site());
+                let name = Ident::new(&f.name, Span::call_site());
+                res = quote!(
+                    #res
+                    use super::#module_name::#name;
+                )
+            });
+
+        res
     }
 
     fn name_token(&self) -> TokenStream {
@@ -75,20 +86,19 @@ impl<'a, 'b> Renderer<'a, 'b> {
         properties
     }
 
-    fn custom_fields_token(&mut self, mut uses: TokenStream) -> (TokenStream, TokenStream) {
+    fn custom_fields_token(&mut self) -> TokenStream {
         let mut fields = quote! {};
         self.renderer_object_type
             .custom_fields(self.context)
             .iter()
             .for_each(|f| {
-                uses = Self::generate_uses(f, &uses);
                 let field = &FieldRenderer::custom_field_token(f);
                 fields = quote!(
                     #fields
                     #field
                 );
             });
-        (fields, uses)
+        fields
     }
 
     fn object_type_code(
@@ -114,7 +124,7 @@ impl<'a, 'b> Renderer<'a, 'b> {
         )
     }
 
-    fn scalar_fields_token(&mut self, mut uses: TokenStream) -> (TokenStream, TokenStream) {
+    fn scalar_fields_token(&mut self) -> TokenStream {
         let mut scalar_fields = quote! {};
         self.renderer_object_type
             .scalar_fields(self.context)
@@ -125,27 +135,7 @@ impl<'a, 'b> Renderer<'a, 'b> {
                     #scalar_fields
                     #field
                 );
-                if f.is_custom_scalar() {
-                    let mod_name = Ident::new(&snake_case(&f.code_type_name()), Span::call_site());
-                    uses = quote!(
-                        use super::#mod_name::*;
-                        #uses
-                    )
-                }
             });
-        (scalar_fields, uses)
-    }
-
-    fn generate_uses(field: &RendererFieldType, uses: &TokenStream) -> TokenStream {
-        match field.module_name() {
-            None => uses.clone(),
-            Some(_t) => {
-                let use_name = FieldRenderer::use_module_token(field);
-                quote! {
-                    #uses
-                    #use_name
-                }
-            }
-        }
+        scalar_fields
     }
 }

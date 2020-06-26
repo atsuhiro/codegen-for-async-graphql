@@ -1,7 +1,7 @@
 use super::Context;
 use async_graphql_parser::schema::ObjectType;
 
-use super::{snake_case, RenderType, RendererFieldType};
+use super::{snake_case, Dependency, RenderType, RendererFieldType};
 
 #[derive(Debug, Clone)]
 pub struct RendererObjectType<'a> {
@@ -30,7 +30,7 @@ impl<'a> RendererObjectType<'a> {
     }
 
     #[must_use]
-    pub fn fields(&self, context: &mut Context) -> Vec<RendererFieldType> {
+    pub fn fields(&self, context: &Context) -> Vec<RendererFieldType> {
         self.doc
             .fields
             .iter()
@@ -58,5 +58,13 @@ impl<'a> RendererObjectType<'a> {
 
     pub fn scalar_fields(&self, context: &mut Context) -> Vec<RendererFieldType> {
         self.field_partition(context).0
+    }
+
+    #[must_use]
+    pub fn dependencies(&self, context: &Context) -> Vec<Dependency> {
+        self.fields(context)
+            .into_iter()
+            .flat_map(|f| f.dependencies())
+            .collect()
     }
 }

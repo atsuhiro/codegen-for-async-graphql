@@ -52,12 +52,4 @@ impl Renderer {
            pub #n : #ty
         )
     }
-
-    pub fn use_module_token(f: &RendererFieldType) -> TokenStream {
-        let module_name = Ident::new(&f.module_name().expect("Unreachable"), Span::call_site());
-        let name = Ident::new(&f.name(), Span::call_site());
-        quote! {
-            use super::#module_name::#name;
-        }
-    }
 }
