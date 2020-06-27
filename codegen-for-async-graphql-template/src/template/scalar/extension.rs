@@ -1,6 +1,6 @@
 use async_graphql_parser::schema::ScalarType;
 
-use super::{FileRenderType, RenderType, RendererScalarType, Save};
+use super::{FileRender, RenderType, RendererScalarType, Save};
 
 impl Save for ScalarType {}
 

@@ -4,7 +4,7 @@ use async_graphql_parser::schema::InterfaceType;
 
 use proc_macro2::{Ident, Span, TokenStream};
 
-use super::{FieldRenderer, FileRenderType, RenderType, RendererInterfaceType, Save, SupportField};
+use super::{FieldRenderer, FileRender, RenderType, RendererInterfaceType, Save, SupportField};
 
 pub struct Renderer<'a, 'b> {
     renderer_interface_type: &'a RendererInterfaceType<'a, 'b>,

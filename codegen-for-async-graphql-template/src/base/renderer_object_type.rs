@@ -1,10 +1,10 @@
 use async_graphql_parser::schema::ObjectType;
 
-use super::{BaseType, FileRenderType, RenderType, RendererFieldType, SupportField};
+use super::{BaseType, FileRender, RenderType, RendererFieldType, SupportField};
 
 pub type RendererObjectType<'a, 'b> = BaseType<'a, 'b, ObjectType>;
 
-impl<'a, 'b> FileRenderType for RendererObjectType<'a, 'b> {}
+impl<'a, 'b> FileRender for RendererObjectType<'a, 'b> {}
 
 impl<'a, 'b> RenderType for RendererObjectType<'a, 'b> {
     #[must_use]

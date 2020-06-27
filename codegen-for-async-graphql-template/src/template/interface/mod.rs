@@ -1,7 +1,7 @@
 mod extension;
 
 pub use super::{
-    Context, FieldRenderer, FileRenderType, Output, RenderType, RendererInterfaceType, Save,
+    Context, FieldRenderer, FileRender, Output, RenderType, RendererInterfaceType, Save,
     SupportField,
 };
 

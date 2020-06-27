@@ -1,10 +1,10 @@
 use async_graphql_parser::schema::ScalarType;
 
-use super::{BaseType, FileRenderType, RenderType};
+use super::{BaseType, FileRender, RenderType};
 
 pub type RendererScalarType<'a, 'b> = BaseType<'a, 'b, ScalarType>;
 
-impl<'a, 'b> FileRenderType for RendererScalarType<'a, 'b> {}
+impl<'a, 'b> FileRender for RendererScalarType<'a, 'b> {}
 
 impl<'a, 'b> RenderType for RendererScalarType<'a, 'b> {
     #[must_use]

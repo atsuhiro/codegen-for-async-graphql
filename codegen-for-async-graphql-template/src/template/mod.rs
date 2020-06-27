@@ -11,8 +11,8 @@ pub use field::Renderer as FieldRenderer;
 use proc_macro2::TokenStream;
 
 pub use super::{
-    Context, FileRenderType, RenderType, RendererFieldType, RendererInterfaceType,
-    RendererObjectType, RendererScalarType, SupportField,
+    Context, FileRender, RenderType, RendererFieldType, RendererInterfaceType, RendererObjectType,
+    RendererScalarType, SupportField,
 };
 
 pub use interface::Generate as InterfaceGenerate;

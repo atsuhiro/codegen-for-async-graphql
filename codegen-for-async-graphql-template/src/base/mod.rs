@@ -11,7 +11,7 @@ pub use config::Config;
 pub use context::Context;
 use generator::{generate_file_from_string, generate_token_from_string};
 
-pub use render_type::{BaseType, Dependency, FileRenderType, RenderType, SupportField};
+pub use render_type::{BaseType, Dependency, FileRender, RenderType, SupportField};
 pub use renderer_field_type::RendererFieldType;
 pub use renderer_interface_type::RendererInterfaceType;
 pub use renderer_object_type::RendererObjectType;

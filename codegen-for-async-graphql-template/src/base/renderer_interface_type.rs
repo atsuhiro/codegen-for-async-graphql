@@ -1,13 +1,13 @@
 use async_graphql_parser::schema::InterfaceType;
 
 use super::{
-    BaseType, Dependency, FileRenderType, RenderType, RendererFieldType, RendererObjectType,
+    BaseType, Dependency, FileRender, RenderType, RendererFieldType, RendererObjectType,
     SupportField,
 };
 
 pub type RendererInterfaceType<'a, 'b> = BaseType<'a, 'b, InterfaceType>;
 
-impl<'a, 'b> FileRenderType for RendererInterfaceType<'a, 'b> {}
+impl<'a, 'b> FileRender for RendererInterfaceType<'a, 'b> {}
 
 impl<'a, 'b> RenderType for RendererInterfaceType<'a, 'b> {
     #[must_use]
@@ -51,17 +51,13 @@ impl<'a, 'b> RendererInterfaceType<'a, 'b> {
         self.context
             .object_types()
             .into_iter()
-            .filter_map(|f| {
-                let eq = f.implements_interfaces().iter().any(|f| {
+            .filter(|f| {
+                f.implements_interfaces().iter().any(|f| {
                     if name == *f {
                         return true;
                     }
                     false
-                });
-                if eq {
-                    return Some(f);
-                }
-                None
+                })
             })
             .collect()
     }

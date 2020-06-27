@@ -4,8 +4,8 @@ use async_graphql_parser::schema::ObjectType;
 use proc_macro2::TokenStream;
 
 pub use super::{
-    Context, FieldRenderer, FileRenderType, Output, RenderType, RendererFieldType,
-    RendererObjectType, Save, SupportField,
+    Context, FieldRenderer, FileRender, Output, RenderType, RendererFieldType, RendererObjectType,
+    Save, SupportField,
 };
 
 use extension::Renderer;

@@ -5,7 +5,7 @@ pub trait RenderType {
     fn description(&self) -> Option<&String>;
 }
 
-pub trait FileRenderType: RenderType {
+pub trait FileRender: RenderType {
     #[must_use]
     fn file_name(&self) -> String {
         snake_case(&self.name())

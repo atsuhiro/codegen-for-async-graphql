@@ -1,6 +1,6 @@
 mod extension;
 
-use super::{Context, FileRenderType, Output, RenderType, RendererScalarType, Save};
+use super::{Context, FileRender, Output, RenderType, RendererScalarType, Save};
 
 use proc_macro2::TokenStream;
 

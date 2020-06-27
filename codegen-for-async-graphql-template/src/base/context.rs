@@ -1,6 +1,5 @@
 use super::{
-    Config, FileRenderType, RenderType, RendererInterfaceType, RendererObjectType,
-    RendererScalarType,
+    Config, FileRender, RenderType, RendererInterfaceType, RendererObjectType, RendererScalarType,
 };
 use async_graphql_parser::schema::{Definition, Document, TypeDefinition};
 
