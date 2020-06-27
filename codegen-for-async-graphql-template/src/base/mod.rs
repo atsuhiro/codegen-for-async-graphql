@@ -1,9 +1,9 @@
 mod config;
 mod context;
-// mod field;
 mod generator;
 mod render_type;
 mod renderer_field_type;
+mod renderer_interface_type;
 mod renderer_object_type;
 mod renderer_scalar_type;
 
@@ -11,8 +11,9 @@ pub use config::Config;
 pub use context::Context;
 use generator::{generate_file_from_string, generate_token_from_string};
 
-pub use render_type::{Dependency, RenderType};
+pub use render_type::{BaseType, Dependency, FileRenderType, RenderType, SupportField};
 pub use renderer_field_type::RendererFieldType;
+pub use renderer_interface_type::RendererInterfaceType;
 pub use renderer_object_type::RendererObjectType;
 pub use renderer_scalar_type::RendererScalarType;
 

@@ -1,4 +1,7 @@
-use super::{Config, RenderType, RendererObjectType, RendererScalarType};
+use super::{
+    Config, FileRenderType, RenderType, RendererInterfaceType, RendererObjectType,
+    RendererScalarType,
+};
 use async_graphql_parser::schema::{Definition, Document, TypeDefinition};
 
 #[derive(Debug, Clone)]
@@ -35,7 +38,14 @@ impl<'a> Context<'a> {
             .map(RendererObjectType::file_name)
             .collect();
 
+        let interface_type_names: Vec<String> = self
+            .interface_types()
+            .iter()
+            .map(RendererInterfaceType::file_name)
+            .collect();
+
         scalar_names.extend(object_type_names);
+        scalar_names.extend(interface_type_names);
         scalar_names
     }
 
@@ -55,8 +65,12 @@ impl<'a> Context<'a> {
         self.type_definition()
             .iter()
             .filter_map(|f| match &f {
-                TypeDefinition::Object(f) => Some(RendererObjectType { doc: &f.node }),
+                TypeDefinition::Object(f) => Some(RendererObjectType {
+                    doc: &f.node,
+                    context: self,
+                }),
                 TypeDefinition::Scalar(_f) => None,
+                TypeDefinition::Interface(_f) => None,
                 _ => panic!("Not implemented"),
             })
             .collect()
@@ -67,9 +81,25 @@ impl<'a> Context<'a> {
         self.type_definition()
             .iter()
             .filter_map(|f| match &f {
-                TypeDefinition::Object(_f) => None,
-                TypeDefinition::Scalar(f) => Some(RendererScalarType { doc: &f.node }),
-                _ => panic!("Not implemented"),
+                TypeDefinition::Scalar(f) => Some(RendererScalarType {
+                    doc: &f.node,
+                    context: self,
+                }),
+                _ => None,
+            })
+            .collect()
+    }
+
+    #[must_use]
+    pub fn interface_types(&self) -> Vec<RendererInterfaceType> {
+        self.type_definition()
+            .iter()
+            .filter_map(|f| match &f {
+                TypeDefinition::Interface(f) => Some(RendererInterfaceType {
+                    doc: &f.node,
+                    context: self,
+                }),
+                _ => None,
             })
             .collect()
     }

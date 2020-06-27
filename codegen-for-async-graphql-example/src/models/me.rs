@@ -15,31 +15,31 @@ pub struct Me {
 }
 #[Object]
 impl Me {
-    async fn friends(&self, ctx: &Context<'_>) -> FriendConnection {
+    pub async fn friends(&self, ctx: &Context<'_>) -> FriendConnection {
         ctx.data::<DataSource>().friends()
     }
-    async fn notifications(&self, ctx: &Context<'_>) -> FieldResult<Vec<Notification>> {
+    pub async fn notifications(&self, ctx: &Context<'_>) -> FieldResult<Vec<Notification>> {
         ctx.data::<DataSource>().notifications()
     }
-    async fn id(&self) -> ID {
+    pub async fn id(&self) -> ID {
         self.id.clone()
     }
-    async fn name(&self) -> String {
+    pub async fn name(&self) -> String {
         self.name.clone()
     }
-    async fn rank(&self) -> f64 {
+    pub async fn rank(&self) -> f64 {
         self.rank.clone()
     }
-    async fn email(&self) -> FieldResult<String> {
+    pub async fn email(&self) -> FieldResult<String> {
         self.email.clone()
     }
-    async fn age(&self) -> FieldResult<i32> {
+    pub async fn age(&self) -> FieldResult<i32> {
         self.age.clone()
     }
-    async fn active(&self) -> FieldResult<bool> {
+    pub async fn active(&self) -> FieldResult<bool> {
         self.active.clone()
     }
-    async fn web(&self) -> FieldResult<Url> {
+    pub async fn web(&self) -> FieldResult<Url> {
         self.web.clone()
     }
 }

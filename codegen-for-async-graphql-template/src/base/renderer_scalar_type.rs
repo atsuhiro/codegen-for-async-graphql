@@ -1,27 +1,22 @@
 use async_graphql_parser::schema::ScalarType;
 
-use super::{snake_case, RenderType};
+use super::{BaseType, FileRenderType, RenderType};
 
-#[derive(Debug, Clone)]
-pub struct RendererScalarType<'a> {
-    pub doc: &'a ScalarType,
-}
+pub type RendererScalarType<'a, 'b> = BaseType<'a, 'b, ScalarType>;
 
-impl<'a> RenderType for RendererScalarType<'a> {
+impl<'a, 'b> FileRenderType for RendererScalarType<'a, 'b> {}
+
+impl<'a, 'b> RenderType for RendererScalarType<'a, 'b> {
     #[must_use]
     fn name(&self) -> String {
         self.doc.name.node.clone()
     }
 
     #[must_use]
-    fn file_name(&self) -> String {
-        snake_case(&self.name())
-    }
-}
-
-impl<'a> RendererScalarType<'a> {
-    #[must_use]
-    pub fn scalar_struct_name(&self) -> String {
-        self.doc.name.node.clone()
+    fn description(&self) -> Option<&String> {
+        match &self.doc.description {
+            Some(_f) => panic!("Not Implemented"),
+            _ => None,
+        }
     }
 }

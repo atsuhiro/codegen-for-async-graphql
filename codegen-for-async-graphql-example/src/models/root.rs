@@ -7,10 +7,10 @@ pub struct Root {
 }
 #[Object]
 impl Root {
-    async fn me(&self, ctx: &Context<'_>) -> Me {
+    pub async fn me(&self, ctx: &Context<'_>) -> Me {
         ctx.data::<DataSource>().me()
     }
-    async fn active(&self) -> bool {
+    pub async fn active(&self) -> bool {
         self.active.clone()
     }
 }

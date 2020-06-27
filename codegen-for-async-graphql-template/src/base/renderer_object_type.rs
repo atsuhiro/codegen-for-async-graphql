@@ -1,70 +1,43 @@
-use super::Context;
 use async_graphql_parser::schema::ObjectType;
 
-use super::{snake_case, Dependency, RenderType, RendererFieldType};
+use super::{BaseType, FileRenderType, RenderType, RendererFieldType, SupportField};
 
-#[derive(Debug, Clone)]
-pub struct RendererObjectType<'a> {
-    pub doc: &'a ObjectType,
-}
+pub type RendererObjectType<'a, 'b> = BaseType<'a, 'b, ObjectType>;
 
-impl<'a> RenderType for RendererObjectType<'a> {
+impl<'a, 'b> FileRenderType for RendererObjectType<'a, 'b> {}
+
+impl<'a, 'b> RenderType for RendererObjectType<'a, 'b> {
     #[must_use]
     fn name(&self) -> String {
         self.doc.name.node.clone()
     }
 
     #[must_use]
-    fn file_name(&self) -> String {
-        snake_case(&self.name())
-    }
-}
-
-impl<'a> RendererObjectType<'a> {
-    #[must_use]
-    pub fn description(&self) -> Option<&String> {
+    fn description(&self) -> Option<&String> {
         match &self.doc.description {
             Some(_f) => panic!("Not Implemented"),
             _ => None,
         }
     }
+}
 
+impl<'a, 'b> SupportField for RendererObjectType<'a, 'b> {
     #[must_use]
-    pub fn fields(&self, context: &Context) -> Vec<RendererFieldType> {
+    fn fields(&self) -> Vec<RendererFieldType> {
         self.doc
             .fields
             .iter()
-            .map(|f| RendererFieldType::new(&f.node, context))
+            .map(|f| RendererFieldType::new(&f.node, self.context))
             .collect()
     }
+}
 
-    #[must_use]
-    pub fn path_name(&self) -> String {
-        snake_case(&self.name())
-    }
-
-    fn field_partition(
-        &self,
-        context: &mut Context,
-    ) -> (Vec<RendererFieldType>, Vec<RendererFieldType>) {
-        self.fields(context)
-            .into_iter()
-            .partition(RendererFieldType::is_scalar)
-    }
-
-    pub fn custom_fields(&self, context: &mut Context) -> Vec<RendererFieldType> {
-        self.field_partition(context).1
-    }
-
-    pub fn scalar_fields(&self, context: &mut Context) -> Vec<RendererFieldType> {
-        self.field_partition(context).0
-    }
-
-    #[must_use]
-    pub fn dependencies(&self, context: &Context) -> Vec<Dependency> {
-        self.fields(context)
-            .into_iter()
-            .flat_map(|f| f.dependencies())
+impl<'a, 'b> RendererObjectType<'a, 'b> {
+    pub fn implements_interfaces(&self) -> Vec<String> {
+        self.doc
+            .implements_interfaces
+            .iter()
+            .map(|f| f.node.clone())
             .collect()
     }
 }

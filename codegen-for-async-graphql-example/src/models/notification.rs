@@ -7,10 +7,10 @@ pub struct Notification {
 }
 #[Object]
 impl Notification {
-    async fn id(&self) -> ID {
+    pub async fn id(&self) -> ID {
         self.id.clone()
     }
-    async fn title(&self) -> String {
+    pub async fn title(&self) -> String {
         self.title.clone()
     }
 }

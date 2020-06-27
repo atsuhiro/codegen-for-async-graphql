@@ -4,29 +4,21 @@ use async_graphql_parser::schema::ObjectType;
 
 use proc_macro2::{Ident, Span, TokenStream};
 
-use super::{Context, FieldRenderer, RenderType, RendererObjectType, Save};
+use super::{FieldRenderer, FileRenderType, RenderType, RendererObjectType, Save, SupportField};
 
 pub struct Renderer<'a, 'b> {
-    context: &'a mut Context<'b>,
-    renderer_object_type: &'a RendererObjectType<'a>,
+    renderer_object_type: &'a RendererObjectType<'a, 'b>,
 }
 
 impl<'a, 'b> Renderer<'a, 'b> {
-    pub fn model_file(
-        renderer_object_type: &'a RendererObjectType<'a>,
-        context: &'a mut Context<'b>,
-    ) {
-        let src = Renderer::token_stream(renderer_object_type, context);
+    pub fn model_file(renderer_object_type: &'a RendererObjectType<'a, 'b>) {
+        let src = Renderer::token_stream(renderer_object_type);
         let file_name = renderer_object_type.file_name();
-        ObjectType::save(&file_name, &src.to_string(), context);
+        ObjectType::save(&file_name, &src.to_string(), renderer_object_type.context);
     }
 
-    pub fn token_stream(
-        renderer_object_type: &'a RendererObjectType<'a>,
-        context: &'a mut Context<'b>,
-    ) -> TokenStream {
+    pub fn token_stream(renderer_object_type: &'a RendererObjectType<'a, 'b>) -> TokenStream {
         let mut obj = Renderer {
-            context,
             renderer_object_type,
         };
 
@@ -52,7 +44,7 @@ impl<'a, 'b> Renderer<'a, 'b> {
             use super::DataSource;
         };
         self.renderer_object_type
-            .dependencies(self.context)
+            .dependencies()
             .iter()
             .for_each(|f| {
                 let module_name = Ident::new(&f.module_name, Span::call_site());
@@ -74,7 +66,7 @@ impl<'a, 'b> Renderer<'a, 'b> {
     fn struct_properties_token(&mut self) -> TokenStream {
         let mut properties = quote! {};
         self.renderer_object_type
-            .scalar_fields(self.context)
+            .scalar_fields()
             .iter()
             .for_each(|f| {
                 let field_property = FieldRenderer::field_property_token(f);
@@ -89,7 +81,7 @@ impl<'a, 'b> Renderer<'a, 'b> {
     fn custom_fields_token(&mut self) -> TokenStream {
         let mut fields = quote! {};
         self.renderer_object_type
-            .custom_fields(self.context)
+            .custom_fields()
             .iter()
             .for_each(|f| {
                 let field = &FieldRenderer::custom_field_token(f);
@@ -127,7 +119,7 @@ impl<'a, 'b> Renderer<'a, 'b> {
     fn scalar_fields_token(&mut self) -> TokenStream {
         let mut scalar_fields = quote! {};
         self.renderer_object_type
-            .scalar_fields(self.context)
+            .scalar_fields()
             .iter()
             .for_each(|f| {
                 let field = FieldRenderer::scalar_fields_token(f);

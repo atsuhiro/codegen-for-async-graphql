@@ -1,6 +1,6 @@
 use async_graphql_parser::schema::ScalarType;
 
-use super::{Context, RenderType, RendererScalarType, Save};
+use super::{FileRenderType, RenderType, RendererScalarType, Save};
 
 impl Save for ScalarType {}
 
@@ -8,18 +8,18 @@ use quote::quote;
 
 use proc_macro2::{Ident, Span, TokenStream};
 
-pub struct Renderer<'a> {
-    renderer_scalar_type: &'a RendererScalarType<'a>,
+pub struct Renderer<'a, 'b> {
+    renderer_scalar_type: &'a RendererScalarType<'a, 'b>,
 }
 
-impl<'a> Renderer<'a> {
-    pub fn model_file(renderer_scalar_type: &'a RendererScalarType<'a>, context: &'a mut Context) {
+impl<'a, 'b> Renderer<'a, 'b> {
+    pub fn model_file(renderer_scalar_type: &'a RendererScalarType<'a, 'b>) {
         let src = Renderer::token_stream(renderer_scalar_type);
         let file_name = renderer_scalar_type.file_name();
-        ScalarType::save(&file_name, &src.to_string(), context);
+        ScalarType::save(&file_name, &src.to_string(), renderer_scalar_type.context);
     }
 
-    pub fn token_stream(renderer_scalar_type: &'a RendererScalarType<'a>) -> TokenStream {
+    pub fn token_stream(renderer_scalar_type: &'a RendererScalarType<'a, 'b>) -> TokenStream {
         let obj = Renderer {
             renderer_scalar_type,
         };
@@ -30,10 +30,7 @@ impl<'a> Renderer<'a> {
     }
 
     fn struct_name(&self) -> Ident {
-        Ident::new(
-            &self.renderer_scalar_type.scalar_struct_name(),
-            Span::call_site(),
-        )
+        Ident::new(&self.renderer_scalar_type.name(), Span::call_site())
     }
 
     fn scalar_code(struct_name: &Ident) -> TokenStream {

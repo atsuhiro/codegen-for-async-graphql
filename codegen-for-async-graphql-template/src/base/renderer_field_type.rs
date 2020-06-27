@@ -171,7 +171,10 @@ impl<'a, 'b> RenderType for RendererFieldType<'a> {
     }
 
     #[must_use]
-    fn file_name(&self) -> String {
-        snake_case(&self.name())
+    fn description(&self) -> Option<&String> {
+        match &self.doc.description {
+            Some(_f) => panic!("Not Implemented"),
+            _ => None,
+        }
     }
 }

@@ -9,7 +9,12 @@ type Root {
 
 scalar Url
 
-type Friend {
+interface User {
+  id: ID!
+  name: String!
+}
+
+type Friend implements User {
   id: ID!
   name: String!
 }
@@ -19,7 +24,7 @@ type FriendConnection {
   nodes: [Friend]!
 }
 
-type Me {
+type Me implements User {
   id: ID!
   name: String!
   rank: Float!

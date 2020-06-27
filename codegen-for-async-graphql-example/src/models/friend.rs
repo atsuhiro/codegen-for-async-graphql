@@ -7,10 +7,10 @@ pub struct Friend {
 }
 #[Object]
 impl Friend {
-    async fn id(&self) -> ID {
+    pub async fn id(&self) -> ID {
         self.id.clone()
     }
-    async fn name(&self) -> String {
+    pub async fn name(&self) -> String {
         self.name.clone()
     }
 }
