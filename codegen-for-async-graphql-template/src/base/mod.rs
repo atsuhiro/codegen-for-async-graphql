@@ -4,6 +4,8 @@ mod generator;
 mod render_type;
 mod renderer_field_type;
 mod renderer_interface_type;
+mod renderer_mutation_type;
+mod renderer_mutations_type;
 mod renderer_object_type;
 mod renderer_scalar_type;
 
@@ -14,6 +16,8 @@ use generator::{generate_file_from_string, generate_token_from_string};
 pub use render_type::{BaseType, Dependency, FileRender, RenderType, SupportField};
 pub use renderer_field_type::RendererFieldType;
 pub use renderer_interface_type::RendererInterfaceType;
+pub use renderer_mutation_type::RendererMutationType;
+pub use renderer_mutations_type::RendererMutationsType;
 pub use renderer_object_type::RendererObjectType;
 pub use renderer_scalar_type::RendererScalarType;
 

@@ -1,6 +1,6 @@
 use crate::template::{
-    generate_interface_type_file, generate_mod_file, generate_object_type_file,
-    generate_object_types_token_stream, generate_scalar_type_file,
+    generate_interface_type_file, generate_mod_file, generate_mutation_type_file,
+    generate_object_type_file, generate_object_types_token_stream, generate_scalar_type_file,
 };
 use async_graphql_parser::parse_schema;
 use async_graphql_parser::schema::Document;
@@ -20,18 +20,19 @@ fn parse(schema: &str) -> Document {
 
 pub fn generate_token_from_string(schema: &str, config: &Config) -> Vec<TokenStream> {
     let doc = parse(schema);
-    let mut context = Context::new(config, &doc);
-    generate_object_types_token_stream(&mut context)
+    let context = Context::new(config, &doc);
+    generate_object_types_token_stream(&context)
 }
 
 pub fn generate_file_from_string(schema: &str, config: &Config) {
     let doc = parse(schema);
 
-    let mut context = Context::new(config, &doc);
+    let context = Context::new(config, &doc);
 
-    generate_scalar_type_file(&mut context);
-    generate_interface_type_file(&mut context);
-    generate_object_type_file(&mut context);
+    generate_scalar_type_file(&context);
+    generate_interface_type_file(&context);
+    generate_object_type_file(&context);
+    generate_mutation_type_file(&context);
 
     generate_mod_file(&context);
 }

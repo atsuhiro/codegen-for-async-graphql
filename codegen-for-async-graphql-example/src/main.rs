@@ -4,7 +4,7 @@ mod models;
 
 use async_graphql::*;
 use async_std::task;
-use models::root::Root;
+use models::query::Query;
 use models::url::Url;
 
 #[derive(Debug, Clone, Copy)]
@@ -55,7 +55,7 @@ fn main() {
 // #[DynSchema("./codegen-for-async-graphql-example/schema.graphql")]
 async fn run() {
     let data_source = DataSource {};
-    let schema = Schema::build(Root { active: true }, EmptyMutation, EmptySubscription)
+    let schema = Schema::build(Query { active: true }, EmptyMutation, EmptySubscription)
         .data(data_source)
         .finish();
     let res = schema

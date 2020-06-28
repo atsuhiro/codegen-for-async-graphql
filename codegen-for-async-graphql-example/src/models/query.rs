@@ -2,11 +2,11 @@ use super::me::Me;
 use super::DataSource;
 use async_graphql::*;
 #[derive(Debug)]
-pub struct Root {
+pub struct Query {
     pub active: bool,
 }
 #[Object]
-impl Root {
+impl Query {
     pub async fn me(&self, ctx: &Context<'_>) -> Me {
         ctx.data::<DataSource>().me()
     }

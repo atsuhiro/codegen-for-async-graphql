@@ -9,13 +9,13 @@ use extension::Renderer;
 pub struct Generate {}
 
 impl Output for Generate {
-    fn generate_files(context: &mut Context) {
+    fn generate_files(context: &Context) {
         context.clone().scalar_types().iter().for_each(|f| {
             Renderer::model_file(f);
         });
     }
 
-    fn generate_token_stream(context: &mut Context) -> Vec<TokenStream> {
+    fn generate_token_stream(context: &Context) -> Vec<TokenStream> {
         context
             .clone()
             .scalar_types()

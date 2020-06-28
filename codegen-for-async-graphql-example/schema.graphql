@@ -1,10 +1,16 @@
-# schema {
-#   query: Root
-# }
-
-type Root {
+type Query {
   me: Me!
   active: Bool!
+}
+
+type Mutation {
+  createMessageMutation(
+    input: CreateMessageMutationInput!
+  ): CreateMessageMutationPayload
+}
+
+input CreateMessageMutationInput {
+  body: String!
 }
 
 scalar Url

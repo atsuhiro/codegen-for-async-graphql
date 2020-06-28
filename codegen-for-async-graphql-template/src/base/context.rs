@@ -1,5 +1,6 @@
 use super::{
-    Config, FileRender, RenderType, RendererInterfaceType, RendererObjectType, RendererScalarType,
+    Config, FileRender, RenderType, RendererInterfaceType, RendererMutationsType,
+    RendererObjectType, RendererScalarType,
 };
 use async_graphql_parser::schema::{Definition, Document, TypeDefinition};
 
@@ -43,8 +44,15 @@ impl<'a> Context<'a> {
             .map(RendererInterfaceType::file_name)
             .collect();
 
+        let mutation_type_names: Vec<String> = self
+            .mutation_types()
+            .iter()
+            .map(RendererMutationsType::file_name)
+            .collect();
+
         scalar_names.extend(object_type_names);
         scalar_names.extend(interface_type_names);
+        scalar_names.extend(mutation_type_names);
         scalar_names
     }
 
@@ -60,17 +68,39 @@ impl<'a> Context<'a> {
     }
 
     #[must_use]
+    pub fn mutation_types(&self) -> Vec<RendererMutationsType> {
+        self.type_definition()
+            .iter()
+            .filter_map(|f| match &f {
+                TypeDefinition::Object(f) => {
+                    if f.node.name.node == "Mutation" {
+                        return Some(RendererMutationsType {
+                            doc: &f.node,
+                            context: self,
+                        });
+                    }
+                    None
+                }
+                _ => None,
+            })
+            .collect()
+    }
+
+    #[must_use]
     pub fn object_types(&self) -> Vec<RendererObjectType> {
         self.type_definition()
             .iter()
             .filter_map(|f| match &f {
-                TypeDefinition::Object(f) => Some(RendererObjectType {
-                    doc: &f.node,
-                    context: self,
-                }),
-                TypeDefinition::Scalar(_f) => None,
-                TypeDefinition::Interface(_f) => None,
-                _ => panic!("Not implemented"),
+                TypeDefinition::Object(f) => {
+                    if f.node.name.node == "Mutation" {
+                        return None;
+                    }
+                    Some(RendererObjectType {
+                        doc: &f.node,
+                        context: self,
+                    })
+                }
+                _ => None,
             })
             .collect()
     }
