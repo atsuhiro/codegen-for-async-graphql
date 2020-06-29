@@ -1,0 +1,33 @@
+{
+  "data": {
+    "active": true,
+    "me": {
+      "id": "11111",
+      "name": "Aaron",
+      "email": "aaa@",
+      "rank": 5.1,
+      "age": 30,
+      "active": true,
+      "web": "https://github.com/",
+      "friends": {
+        "totalCount": 10,
+        "nodes": [
+          {
+            "id": "1-1",
+            "name": "Beck"
+          }
+        ]
+      },
+      "notifications": [
+        {
+          "id": "1-1",
+          "title": "title1"
+        },
+        {
+          "id": "2-1",
+          "title": "title2"
+        }
+      ]
+    }
+  }
+}

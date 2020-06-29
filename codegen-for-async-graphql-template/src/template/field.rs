@@ -1,20 +1,16 @@
 use quote::quote;
 
-use super::RendererFieldType;
+use super::{RenderField, RendererFieldType, SupportType};
 
-use proc_macro2::{Ident, Span, TokenStream};
+use proc_macro2::TokenStream;
 
 pub struct Renderer {
     // context: &'a mut Context<'b>,
 }
 
-impl Renderer {
-    fn field_name_token(f: &RendererFieldType) -> TokenStream {
-        let name = f.snaked_field_name();
-        let name = Ident::new(name.as_str(), Span::call_site());
-        quote!(#name)
-    }
+impl RenderField for Renderer {}
 
+impl Renderer {
     fn struct_name(f: &RendererFieldType) -> String {
         let name = f.code_type_name();
         match (f.non_null(), f.is_list()) {
@@ -22,17 +18,6 @@ impl Renderer {
             (true, true) => format!("Vec<{}>", name),
             (false, false) => format!("FieldResult<{}>", name),
             (false, true) => format!("FieldResult<Vec<{}>>", name),
-        }
-    }
-
-    fn struct_name_token(f: &RendererFieldType) -> TokenStream {
-        let name = f.code_type_name();
-        let name = Ident::new(&name, Span::call_site());
-        match (f.non_null(), f.is_list()) {
-            (true, false) => quote!(#name),
-            (true, true) => quote!(Vec<#name>),
-            (false, false) => quote!(FieldResult<#name>),
-            (false, true) => quote!(FieldResult<Vec<#name>>),
         }
     }
 

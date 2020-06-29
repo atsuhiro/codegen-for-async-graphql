@@ -30,7 +30,10 @@ impl<'a, 'b> SupportField for RendererInterfaceType<'a, 'b> {
         self.doc
             .fields
             .iter()
-            .map(|f| RendererFieldType::new(&f.node, self.context))
+            .map(|f| RendererFieldType {
+                doc: &f.node,
+                context: self.context,
+            })
             .collect()
     }
 }

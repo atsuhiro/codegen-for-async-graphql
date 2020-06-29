@@ -4,8 +4,8 @@ mod extension;
 use proc_macro2::TokenStream;
 
 pub use super::{
-    Context, FieldRenderer, FileRender, Output, RenderType, RendererMutationsType, Save,
-    SupportField,
+    Context, FieldRenderer, FileRender, Output, RenderField, RenderType, RendererMutationType,
+    RendererMutationsType, Save, SupportType,
 };
 
 use extension::Renderer;

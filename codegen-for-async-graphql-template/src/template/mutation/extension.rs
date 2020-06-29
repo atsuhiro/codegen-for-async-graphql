@@ -2,13 +2,15 @@ use quote::quote;
 
 use async_graphql_parser::schema::ObjectType;
 
-use proc_macro2::{Ident, Span, TokenStream};
+use proc_macro2::TokenStream;
 
-use super::{FileRender, RenderType, RendererMutationsType, Save};
+use super::{FileRender, RenderField, RendererMutationsType, Save};
 
 pub struct Renderer<'a, 'b> {
     renderer_mutation_type: &'a RendererMutationsType<'a, 'b>,
 }
+
+impl<'a, 'b> RenderField for Renderer<'a, 'b> {}
 
 impl<'a, 'b> Renderer<'a, 'b> {
     pub fn model_file(renderer_mutation_type: &'a RendererMutationsType<'a, 'b>) {
@@ -26,8 +28,11 @@ impl<'a, 'b> Renderer<'a, 'b> {
 
         quote!(
             use async_graphql::*;
+            use super::create_friend_mutation_payload::CreateFriendMutationPayload;
+            use super::ResolveMutation;
 
-            struct Mutation;
+            pub struct Mutation;
+            impl ResolveMutation for Mutation {}
 
             #[Object]
             impl Mutation {
@@ -42,12 +47,13 @@ impl<'a, 'b> Renderer<'a, 'b> {
             .mutations()
             .iter()
             .for_each(|f| {
-                let name = Ident::new(&f.name(), Span::call_site());
+                let name = Self::field_name_token(f);
+                let res = Self::struct_name_token(f);
                 result = quote!(
                     #result
 
-                    async fn #name(&self, body: String) -> FieldResult<CreateMessageMutationPayload> {
-                        Ok(true)
+                    async fn #name(&self, body: String) -> #res {
+                        self.create_friend_mutation_resolver(ID::from("1-1"))
                     }
                 );
             });

@@ -4,6 +4,7 @@ mod models;
 
 use async_graphql::*;
 use async_std::task;
+use models::mutation::Mutation;
 use models::query::Query;
 use models::url::Url;
 
@@ -31,6 +32,13 @@ impl DataSource {
         vec![friend1]
     }
 
+    fn friend(&self) -> models::friend::Friend {
+        models::friend::Friend {
+            id: ID::from("1-1"),
+            name: "Beck".to_string(),
+        }
+    }
+
     fn friends(&self) -> models::friend_connection::FriendConnection {
         models::friend_connection::FriendConnection { total_count: 10 }
     }
@@ -48,19 +56,35 @@ impl DataSource {
     }
 }
 
+pub trait ResolveMutation {
+    fn create_friend_mutation_resolver(
+        &self,
+        id: ID,
+    ) -> FieldResult<models::create_friend_mutation_payload::CreateFriendMutationPayload> {
+        Ok(models::create_friend_mutation_payload::CreateFriendMutationPayload {})
+    }
+}
+
 fn main() {
-    task::block_on(async { run().await });
+    task::block_on(async { run("query{}").await });
 }
 
 // #[DynSchema("./codegen-for-async-graphql-example/schema.graphql")]
-async fn run() {
+async fn run(query: &str) -> String {
     let data_source = DataSource {};
-    let schema = Schema::build(Query { active: true }, EmptyMutation, EmptySubscription)
+    let schema = Schema::build(Query { active: true }, Mutation, EmptySubscription)
         .data(data_source)
         .finish();
-    let res = schema
-        .execute(
-            "{
+    let res = schema.execute(query).await;
+    let json = serde_json::to_string_pretty(&async_graphql::http::GQLResponse(res));
+    json.unwrap()
+}
+
+#[test]
+fn instance_query() {
+    use std::fs;
+
+    let query = "{
             active
             me {
                 id
@@ -82,14 +106,42 @@ async fn run() {
                     title
                 }
             }
-        }",
-        )
-        .await;
-    let json = serde_json::to_string(&async_graphql::http::GQLResponse(res));
-    println!("{:?}", json);
+        }";
+    task::block_on(async {
+        let json = run(query).await;
+        let path = "./tests/snapshots/main.json";
+        // fs::write(path, json).unwrap();
+        let snapshot: String = fs::read_to_string(path).unwrap();
+        assert_eq!(json, snapshot);
+    });
 }
 
 #[test]
-fn instance_query() {
-    task::block_on(async { run().await });
+fn instance_mutation() {
+    let query = "
+        mutation {
+            createFriendMutation {
+                friend {
+                    id
+                }
+            }
+        }";
+    task::block_on(async {
+        let json = run(query).await;
+        println!("{:?}", json);
+    });
+}
+
+#[test]
+fn introspection_query() {
+    use std::fs;
+
+    let query = fs::read_to_string("../tests/queries/introspection.graphql").unwrap();
+    task::block_on(async {
+        let json = run(query.as_str()).await;
+        let path = "./tests/snapshots/introspection.json";
+        fs::write(path, json).unwrap();
+        // let snapshot: String = fs::read_to_string(path).unwrap();
+        // assert_eq!(json, snapshot);
+    });
 }

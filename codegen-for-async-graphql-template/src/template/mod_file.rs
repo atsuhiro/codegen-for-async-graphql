@@ -9,6 +9,7 @@ impl Save for Mod {}
 fn generate_token_stream(names: &[String]) -> TokenStream {
     let mut src = quote!(
         use crate::DataSource;
+        use super::ResolveMutation;
     );
     names.iter().for_each(|f| {
         let name = Ident::new(f, Span::call_site());

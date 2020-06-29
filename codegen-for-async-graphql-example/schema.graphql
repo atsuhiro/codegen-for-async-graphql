@@ -4,13 +4,17 @@ type Query {
 }
 
 type Mutation {
-  createMessageMutation(
-    input: CreateMessageMutationInput!
-  ): CreateMessageMutationPayload
+  createFriendMutation(
+    input: CreateFriendMutationInput!
+  ): CreateFriendMutationPayload
 }
 
-input CreateMessageMutationInput {
-  body: String!
+type CreateFriendMutationPayload {
+  friend: Friend!
+}
+
+input CreateFriendMutationInput {
+  userId: ID!
 }
 
 scalar Url
