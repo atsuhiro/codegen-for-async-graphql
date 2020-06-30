@@ -4,11 +4,16 @@ use async_graphql_parser::schema::InterfaceType;
 
 use proc_macro2::{Ident, Span, TokenStream};
 
-use super::{FieldRenderer, FileRender, RenderType, RendererInterfaceType, Save, SupportField};
+use super::{
+    FieldRenderer, FileRender, RenderDependencies, RenderType, RendererInterfaceType, Save,
+    SupportFields,
+};
 
 pub struct Renderer<'a, 'b> {
     renderer_interface_type: &'a RendererInterfaceType<'a, 'b>,
 }
+
+impl<'a, 'b> RenderDependencies for Renderer<'a, 'b> {}
 
 impl<'a, 'b> Renderer<'a, 'b> {
     pub fn model_file(renderer_interface_type: &'a RendererInterfaceType<'a, 'b>) {
@@ -28,10 +33,10 @@ impl<'a, 'b> Renderer<'a, 'b> {
 
         let name = obj.name_token();
         let fields = obj.struct_properties_token();
-        let uses = obj.uses();
+        let dependencies = obj.dependencies_token();
         let enum_properties = obj.enum_properties();
 
-        Self::object_type_code(&name, &fields, &uses, &enum_properties)
+        Self::object_type_code(&name, &fields, &dependencies, &enum_properties)
     }
 
     pub fn name_token(&self) -> TokenStream {
@@ -54,23 +59,12 @@ impl<'a, 'b> Renderer<'a, 'b> {
         res
     }
 
-    fn uses(&self) -> TokenStream {
-        let mut res = quote!(
+    fn dependencies_token(&self) -> TokenStream {
+        let dep = Self::render_dependencies(self.renderer_interface_type.dependencies());
+        quote!(
             use async_graphql::*;
-        );
-        self.renderer_interface_type
-            .dependencies()
-            .iter()
-            .for_each(|f| {
-                let module_name = Ident::new(&f.module_name, Span::call_site());
-                let name = Ident::new(&f.name, Span::call_site());
-                res = quote!(
-                    #res
-                    use super::#module_name::#name;
-                )
-            });
-
-        res
+            #dep
+        )
     }
 
     fn struct_properties_token(&self) -> TokenStream {
@@ -91,16 +85,16 @@ impl<'a, 'b> Renderer<'a, 'b> {
     fn object_type_code(
         name: &TokenStream,
         fields: &TokenStream,
-        uses: &TokenStream,
+        dependencies: &TokenStream,
         enum_peoperties: &TokenStream,
     ) -> TokenStream {
         quote!(
-            #uses
+            #dependencies
 
             #[Interface(
                 #fields
             )]
-            enum #name {
+            pub enum #name {
                 #enum_peoperties
             }
         )

@@ -1,26 +1,27 @@
 mod field;
+mod input_object;
 pub mod interface;
 mod mod_file;
 mod mutation;
 mod object_type;
 mod save;
 mod scalar;
-pub mod utils;
 
 pub use field::Renderer as FieldRenderer;
 
 use proc_macro2::{Ident, Span, TokenStream};
 
-pub use super::{
-    Context, FileRender, RenderType, RendererFieldType, RendererInterfaceType,
-    RendererMutationType, RendererMutationsType, RendererObjectType, RendererScalarType,
-    SupportField, SupportType,
+use crate::base::{
+    Context, Dependency, FileRender, RenderType, RendererFieldType, RendererInputObjectType,
+    RendererInterfaceType, RendererMutationType, RendererMutationsType, RendererObjectType,
+    RendererScalarType, SupportField, SupportFields, SupportType,
 };
 
-pub use interface::Generate as InterfaceGenerate;
-pub use mutation::Generate as MutationTypeGenerate;
-pub use object_type::Generate as ObjectTypeGenerate;
-pub use scalar::Generate as ScalarGenerate;
+use input_object::Generate as InputObjectGenerate;
+use interface::Generate as InterfaceGenerate;
+use mutation::Generate as MutationTypeGenerate;
+use object_type::Generate as ObjectTypeGenerate;
+use scalar::Generate as ScalarGenerate;
 
 pub use mod_file::generate_file as generate_mod_file;
 pub use save::Save;
@@ -47,6 +48,10 @@ pub fn generate_scalar_type_file(context: &Context) {
     ScalarGenerate::generate_files(context)
 }
 
+pub fn generate_input_object_type_file(context: &Context) {
+    InputObjectGenerate::generate_files(context)
+}
+
 pub trait Output {
     fn generate_files(context: &Context);
     fn generate_token_stream(context: &Context) -> Vec<TokenStream>;
@@ -55,9 +60,9 @@ pub trait Output {
 pub trait RenderField {
     fn field_name_token<T>(f: &T) -> TokenStream
     where
-        T: SupportType,
+        T: SupportField,
     {
-        let name = f.snaked_field_name();
+        let name = f.field_name();
         let name = Ident::new(name.as_str(), Span::call_site());
         quote!(#name)
     }
@@ -74,5 +79,20 @@ pub trait RenderField {
             (false, false) => quote!(FieldResult<#name>),
             (false, true) => quote!(FieldResult<Vec<#name>>),
         }
+    }
+}
+
+pub trait RenderDependencies {
+    fn render_dependencies(dependencies: Vec<Dependency>) -> TokenStream {
+        let mut res = quote!();
+        dependencies.iter().for_each(|f| {
+            let module_name = Ident::new(&f.module_name, Span::call_site());
+            let name = Ident::new(&f.name, Span::call_site());
+            res = quote!(
+                #res
+                use super::#module_name::#name;
+            )
+        });
+        res
     }
 }

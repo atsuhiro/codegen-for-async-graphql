@@ -3,9 +3,9 @@ mod extension;
 // use async_graphql_parser::schema::ObjectType;
 use proc_macro2::TokenStream;
 
-pub use super::{
-    Context, FieldRenderer, FileRender, Output, RenderField, RenderType, RendererMutationType,
-    RendererMutationsType, Save, SupportType,
+use super::{
+    Context, FileRender, Output, RenderDependencies, RenderField, RendererMutationType,
+    RendererMutationsType, Save, SupportField, SupportType,
 };
 
 use extension::Renderer;

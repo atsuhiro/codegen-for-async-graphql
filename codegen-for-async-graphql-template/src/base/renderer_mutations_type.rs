@@ -1,6 +1,6 @@
 use async_graphql_parser::schema::ObjectType;
 
-use super::{Context, FileRender, RenderType, RendererMutationType};
+use super::{Context, Dependency, FileRender, RenderType, RendererMutationType, SupportField};
 
 pub struct RendererMutationsType<'a, 'b> {
     pub doc: &'a ObjectType,
@@ -34,6 +34,13 @@ impl<'a, 'b> RendererMutationsType<'a, 'b> {
                 doc: &f.node,
                 context: self.context,
             })
+            .collect()
+    }
+
+    pub fn dependencies(&self) -> Vec<Dependency> {
+        self.mutations()
+            .iter()
+            .flat_map(|f| f.arguments_dependencies())
             .collect()
     }
 }

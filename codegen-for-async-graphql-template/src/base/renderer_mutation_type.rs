@@ -1,6 +1,6 @@
-use async_graphql_parser::schema::Field;
+use async_graphql_parser::schema::{Field, Type};
 
-use super::{Context, RenderType, SupportType};
+use super::{Context, RenderType, SupportField, SupportType};
 
 pub struct RendererMutationType<'a, 'b> {
     pub doc: &'a Field,
@@ -8,8 +8,18 @@ pub struct RendererMutationType<'a, 'b> {
 }
 
 impl<'a, 'b> SupportType for RendererMutationType<'a, 'b> {
+    fn ty(&self) -> &Type {
+        &self.doc.ty.node
+    }
+}
+
+impl<'a, 'b> SupportField for RendererMutationType<'a, 'b> {
     fn doc(&self) -> &Field {
         self.doc
+    }
+
+    fn context(&self) -> &Context {
+        self.context
     }
 }
 

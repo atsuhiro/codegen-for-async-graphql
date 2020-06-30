@@ -4,11 +4,16 @@ use async_graphql_parser::schema::ObjectType;
 
 use proc_macro2::{Ident, Span, TokenStream};
 
-use super::{FieldRenderer, FileRender, RenderType, RendererObjectType, Save, SupportField};
+use super::{
+    FieldRenderer, FileRender, RenderDependencies, RenderType, RendererObjectType, Save,
+    SupportFields,
+};
 
 pub struct Renderer<'a, 'b> {
     renderer_object_type: &'a RendererObjectType<'a, 'b>,
 }
+
+impl<'a, 'b> RenderDependencies for Renderer<'a, 'b> {}
 
 impl<'a, 'b> Renderer<'a, 'b> {
     pub fn model_file(renderer_object_type: &'a RendererObjectType<'a, 'b>) {
@@ -27,10 +32,10 @@ impl<'a, 'b> Renderer<'a, 'b> {
         let struct_properties = obj.struct_properties_token();
         let scalar_fields_token = obj.scalar_fields_token();
 
-        let uses = obj.uses();
+        let dependencies = obj.dependencies_token();
 
         Self::object_type_code(
-            &uses,
+            &dependencies,
             &name,
             &struct_properties,
             &fields,
@@ -38,24 +43,13 @@ impl<'a, 'b> Renderer<'a, 'b> {
         )
     }
 
-    fn uses(&self) -> TokenStream {
-        let mut res = quote! {
+    fn dependencies_token(&self) -> TokenStream {
+        let dep = Self::render_dependencies(self.renderer_object_type.dependencies());
+        quote!(
             use async_graphql::*;
             use super::DataSource;
-        };
-        self.renderer_object_type
-            .dependencies()
-            .iter()
-            .for_each(|f| {
-                let module_name = Ident::new(&f.module_name, Span::call_site());
-                let name = Ident::new(&f.name, Span::call_site());
-                res = quote!(
-                    #res
-                    use super::#module_name::#name;
-                )
-            });
-
-        res
+            #dep
+        )
     }
 
     fn name_token(&self) -> TokenStream {
@@ -94,14 +88,14 @@ impl<'a, 'b> Renderer<'a, 'b> {
     }
 
     fn object_type_code(
-        uses: &TokenStream,
+        dependencies: &TokenStream,
         name: &TokenStream,
         struct_properties: &TokenStream,
         fields: &TokenStream,
         scalar_fields_token: &TokenStream,
     ) -> TokenStream {
         quote!(
-            #uses
+            #dependencies
 
             #[derive(Debug)]
             pub struct #name {

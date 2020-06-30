@@ -1,8 +1,8 @@
 mod extension;
 
-pub use super::{
-    Context, FieldRenderer, FileRender, Output, RenderType, RendererInterfaceType, Save,
-    SupportField,
+use super::{
+    Context, FieldRenderer, FileRender, Output, RenderDependencies, RenderType,
+    RendererInterfaceType, Save, SupportFields,
 };
 
 use extension::Renderer;

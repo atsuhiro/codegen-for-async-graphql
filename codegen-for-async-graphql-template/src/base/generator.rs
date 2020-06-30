@@ -1,6 +1,7 @@
-use crate::template::{
-    generate_interface_type_file, generate_mod_file, generate_mutation_type_file,
-    generate_object_type_file, generate_object_types_token_stream, generate_scalar_type_file,
+use super::{
+    generate_input_object_type_file, generate_interface_type_file, generate_mod_file,
+    generate_mutation_type_file, generate_object_type_file, generate_object_types_token_stream,
+    generate_scalar_type_file,
 };
 use async_graphql_parser::parse_schema;
 use async_graphql_parser::schema::Document;
@@ -33,6 +34,7 @@ pub fn generate_file_from_string(schema: &str, config: &Config) {
     generate_interface_type_file(&context);
     generate_object_type_file(&context);
     generate_mutation_type_file(&context);
+    generate_input_object_type_file(&context);
 
     generate_mod_file(&context);
 }

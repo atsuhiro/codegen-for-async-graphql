@@ -1,6 +1,6 @@
 use async_graphql_parser::schema::ObjectType;
 
-use super::{BaseType, FileRender, RenderType, RendererFieldType, SupportField};
+use super::{BaseType, FileRender, RenderType, RendererFieldType, SupportFields};
 
 pub type RendererObjectType<'a, 'b> = BaseType<'a, 'b, ObjectType>;
 
@@ -21,7 +21,7 @@ impl<'a, 'b> RenderType for RendererObjectType<'a, 'b> {
     }
 }
 
-impl<'a, 'b> SupportField for RendererObjectType<'a, 'b> {
+impl<'a, 'b> SupportFields for RendererObjectType<'a, 'b> {
     #[must_use]
     fn fields(&self) -> Vec<RendererFieldType> {
         self.doc

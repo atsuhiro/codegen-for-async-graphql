@@ -1,6 +1,6 @@
 use super::{
-    Config, FileRender, RenderType, RendererInterfaceType, RendererMutationsType,
-    RendererObjectType, RendererScalarType,
+    Config, FileRender, RenderType, RendererInputObjectType, RendererInterfaceType,
+    RendererMutationsType, RendererObjectType, RendererScalarType,
 };
 use async_graphql_parser::schema::{Definition, Document, TypeDefinition};
 
@@ -50,9 +50,16 @@ impl<'a> Context<'a> {
             .map(RendererMutationsType::file_name)
             .collect();
 
+        let input_object_type_names: Vec<String> = self
+            .input_object_types()
+            .iter()
+            .map(RendererInputObjectType::file_name)
+            .collect();
+
         scalar_names.extend(object_type_names);
         scalar_names.extend(interface_type_names);
         scalar_names.extend(mutation_type_names);
+        scalar_names.extend(input_object_type_names);
         scalar_names
     }
 
@@ -125,6 +132,20 @@ impl<'a> Context<'a> {
             .iter()
             .filter_map(|f| match &f {
                 TypeDefinition::Interface(f) => Some(RendererInterfaceType {
+                    doc: &f.node,
+                    context: self,
+                }),
+                _ => None,
+            })
+            .collect()
+    }
+
+    #[must_use]
+    pub fn input_object_types(&self) -> Vec<RendererInputObjectType> {
+        self.type_definition()
+            .iter()
+            .filter_map(|f| match &f {
+                TypeDefinition::InputObject(f) => Some(RendererInputObjectType {
                     doc: &f.node,
                     context: self,
                 }),

@@ -1,6 +1,6 @@
 use quote::quote;
 
-use super::{RenderField, RendererFieldType, SupportType};
+use super::{RenderField, RendererFieldType, SupportField, SupportType};
 
 use proc_macro2::TokenStream;
 
@@ -50,7 +50,7 @@ impl Renderer {
     }
 
     pub fn field_interface_token(f: &RendererFieldType) -> TokenStream {
-        let n = f.snaked_field_name();
+        let n = f.field_name();
         let ty = &Self::struct_name(f);
         quote!(
             field(name = #n, type = #ty)

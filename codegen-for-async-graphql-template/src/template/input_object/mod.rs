@@ -1,22 +1,20 @@
 mod extension;
 
-use async_graphql_parser::schema::ObjectType;
-use proc_macro2::TokenStream;
-
-use super::{
-    Context, FieldRenderer, FileRender, Output, RenderDependencies, RenderType, RendererObjectType,
-    Save, SupportFields,
-};
+use super::{Context, FileRender, Output, RenderDependencies, RendererInputObjectType, Save};
 
 use extension::Renderer;
 
-impl Save for ObjectType {}
+use proc_macro2::TokenStream;
+
+use async_graphql_parser::schema::InputObjectType;
+
+impl Save for InputObjectType {}
 
 pub struct Generate {}
 
 impl Output for Generate {
     fn generate_files(context: &Context) {
-        context.clone().object_types().iter().for_each(|f| {
+        context.clone().input_object_types().iter().for_each(|f| {
             Renderer::model_file(f);
         });
     }
@@ -24,7 +22,7 @@ impl Output for Generate {
     fn generate_token_stream(context: &Context) -> Vec<TokenStream> {
         context
             .clone()
-            .object_types()
+            .input_object_types()
             .iter()
             .map(|f| Renderer::token_stream(f))
             .collect()

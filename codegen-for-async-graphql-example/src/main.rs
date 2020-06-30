@@ -7,6 +7,7 @@ use async_std::task;
 use models::mutation::Mutation;
 use models::query::Query;
 use models::url::Url;
+use models::user::User;
 
 #[derive(Debug, Clone, Copy)]
 pub struct DataSource {}
@@ -59,7 +60,7 @@ impl DataSource {
 pub trait ResolveMutation {
     fn create_friend_mutation_resolver(
         &self,
-        id: ID,
+        input: CreateFriendMutationInput,
     ) -> FieldResult<models::create_friend_mutation_payload::CreateFriendMutationPayload> {
         Ok(models::create_friend_mutation_payload::CreateFriendMutationPayload {})
     }
@@ -73,6 +74,7 @@ fn main() {
 async fn run(query: &str) -> String {
     let data_source = DataSource {};
     let schema = Schema::build(Query { active: true }, Mutation, EmptySubscription)
+        .register_type::<User>()
         .data(data_source)
         .finish();
     let res = schema.execute(query).await;
