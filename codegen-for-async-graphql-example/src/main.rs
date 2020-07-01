@@ -7,6 +7,7 @@ use async_std::task;
 use models::create_friend_mutation_input;
 use models::mutation::Mutation;
 use models::query::Query;
+use models::search_result::SearchResult;
 use models::url::Url;
 use models::user::User;
 
@@ -55,6 +56,11 @@ impl DataSource {
             title: "title2".to_string(),
         };
         Ok(vec![node1, node2])
+    }
+
+    fn search(&self) -> FieldResult<Vec<SearchResult>> {
+        let res = vec![];
+        Ok(res)
     }
 }
 
@@ -107,6 +113,16 @@ fn instance_query() {
                 notifications {
                     id
                     title
+                }
+                search {
+                    ... on Friend {
+                        id
+                        name
+                    }
+                    ... on Notification {
+                        id
+                        title
+                    }
                 }
             }
         }";

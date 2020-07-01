@@ -3,7 +3,7 @@ use async_graphql_parser::schema::{Definition, Document, TypeDefinition};
 
 use crate::document_wrapper::{
     FileRender, InputObjectTypeWrapper, InterfaceTypeWrapper, MutationsTypeWrapper,
-    ObjectTypeWrapper, RenderType, ScalarTypeWrapper,
+    ObjectTypeWrapper, RenderType, ScalarTypeWrapper, UnionTypeWrapper,
 };
 
 #[derive(Debug, Clone)]
@@ -58,10 +58,17 @@ impl<'a> Context<'a> {
             .map(InputObjectTypeWrapper::file_name)
             .collect();
 
+        let union_type_names: Vec<String> = self
+            .union_types()
+            .iter()
+            .map(UnionTypeWrapper::file_name)
+            .collect();
+
         scalar_names.extend(object_type_names);
         scalar_names.extend(interface_type_names);
         scalar_names.extend(mutation_type_names);
         scalar_names.extend(input_object_type_names);
+        scalar_names.extend(union_type_names);
         scalar_names
     }
 
@@ -121,6 +128,20 @@ impl<'a> Context<'a> {
             .iter()
             .filter_map(|f| match &f {
                 TypeDefinition::Scalar(f) => Some(ScalarTypeWrapper {
+                    doc: &f.node,
+                    context: self,
+                }),
+                _ => None,
+            })
+            .collect()
+    }
+
+    #[must_use]
+    pub fn union_types(&self) -> Vec<UnionTypeWrapper> {
+        self.type_definition()
+            .iter()
+            .filter_map(|f| match &f {
+                TypeDefinition::Union(f) => Some(UnionTypeWrapper {
                     doc: &f.node,
                     context: self,
                 }),

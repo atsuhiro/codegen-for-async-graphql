@@ -7,6 +7,7 @@ mod mutations_type_wrapper;
 mod object_type_wrapper;
 mod scalar_type_wrapper;
 mod type_wrapper;
+mod union_type_wrapper;
 
 use crate::base::utils::snake_case;
 use crate::base::Context;
@@ -24,3 +25,4 @@ pub use mutation_type_wrapper::MutationTypeWrapper;
 pub use mutations_type_wrapper::MutationsTypeWrapper;
 pub use object_type_wrapper::ObjectTypeWrapper;
 pub use scalar_type_wrapper::ScalarTypeWrapper;
+pub use union_type_wrapper::UnionTypeWrapper;

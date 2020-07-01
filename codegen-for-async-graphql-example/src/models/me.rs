@@ -1,5 +1,6 @@
 use super::friend_connection::FriendConnection;
 use super::notification::Notification;
+use super::search_result::SearchResult;
 use super::url::Url;
 use super::DataSource;
 use async_graphql::*;
@@ -20,6 +21,9 @@ impl Me {
     }
     pub async fn notifications(&self, ctx: &Context<'_>) -> FieldResult<Vec<Notification>> {
         ctx.data::<DataSource>().notifications()
+    }
+    pub async fn search(&self, ctx: &Context<'_>) -> FieldResult<Vec<SearchResult>> {
+        ctx.data::<DataSource>().search()
     }
     pub async fn id(&self) -> ID {
         self.id.clone()

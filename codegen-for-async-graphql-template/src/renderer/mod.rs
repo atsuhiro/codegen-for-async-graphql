@@ -6,6 +6,7 @@ mod object_type;
 mod output;
 mod save;
 mod scalar;
+mod union_type;
 
 mod internal;
 
@@ -23,7 +24,7 @@ use crate::base::Context;
 use crate::document_wrapper::{
     Dependency, FileRender, InputObjectTypeWrapper, InterfaceTypeWrapper, MutationTypeWrapper,
     MutationsTypeWrapper, ObjectTypeWrapper, RenderType, ScalarTypeWrapper, SupportField,
-    SupportFields, SupportType, SupportTypeName,
+    SupportFields, SupportType, SupportTypeName, UnionTypeWrapper,
 };
 
 pub fn render_from_file(context: &Context) {
@@ -32,6 +33,7 @@ pub fn render_from_file(context: &Context) {
     mutation::Generate::generate_files(context);
     scalar::Generate::generate_files(context);
     input_object::Generate::generate_files(context);
+    union_type::Generate::generate_files(context);
     mod_file::Generate::generate_files(context);
 }
 

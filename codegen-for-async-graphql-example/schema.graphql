@@ -49,9 +49,12 @@ type Me implements User {
   friends(first: Int): FriendConnection!
   notifications: [Notification]
   web: Url
+  search: [SearchResult]
 }
 
 type Notification {
   id: ID!
   title: String!
 }
+
+union SearchResult = Friend | Notification

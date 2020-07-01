@@ -8,5 +8,6 @@ pub mod me;
 pub mod mutation;
 pub mod notification;
 pub mod query;
+pub mod search_result;
 pub mod url;
 pub mod user;
