@@ -4,6 +4,7 @@ mod models;
 
 use async_graphql::*;
 use async_std::task;
+use models::create_friend_mutation_input;
 use models::mutation::Mutation;
 use models::query::Query;
 use models::url::Url;
@@ -60,7 +61,7 @@ impl DataSource {
 pub trait ResolveMutation {
     fn create_friend_mutation_resolver(
         &self,
-        input: CreateFriendMutationInput,
+        input: create_friend_mutation_input::CreateFriendMutationInput,
     ) -> FieldResult<models::create_friend_mutation_payload::CreateFriendMutationPayload> {
         Ok(models::create_friend_mutation_payload::CreateFriendMutationPayload {})
     }
@@ -122,7 +123,7 @@ fn instance_query() {
 fn instance_mutation() {
     let query = "
         mutation {
-            createFriendMutation {
+            createFriendMutation(input: {userId: \"11\"}) {
                 friend {
                     id
                 }
@@ -142,8 +143,8 @@ fn introspection_query() {
     task::block_on(async {
         let json = run(query.as_str()).await;
         let path = "./tests/snapshots/introspection.json";
-        fs::write(path, json).unwrap();
-        // let snapshot: String = fs::read_to_string(path).unwrap();
-        // assert_eq!(json, snapshot);
+        // fs::write(path, json).unwrap();
+        let snapshot: String = fs::read_to_string(path).unwrap();
+        assert_eq!(json, snapshot);
     });
 }

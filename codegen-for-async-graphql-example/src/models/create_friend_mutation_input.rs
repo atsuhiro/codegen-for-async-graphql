@@ -1,5 +1,5 @@
 use async_graphql::*;
 #[InputObject]
 pub struct CreateFriendMutationInput {
-    userId: ID,
+    pub user_id: ID,
 }

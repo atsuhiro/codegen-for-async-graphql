@@ -19,6 +19,29 @@
           "possibleTypes": null
         },
         {
+          "kind": "INPUT_OBJECT",
+          "name": "CreateFriendMutationInput",
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "userId",
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "ID",
+                  "ofType": null
+                }
+              },
+              "defaultValue": null
+            }
+          ],
+          "interfaces": null,
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
           "kind": "OBJECT",
           "name": "CreateFriendMutationPayload",
           "fields": [
@@ -331,13 +354,13 @@
               "name": "createFriendMutation",
               "args": [
                 {
-                  "name": "body",
+                  "name": "input",
                   "type": {
                     "kind": "NON_NULL",
                     "name": null,
                     "ofType": {
-                      "kind": "SCALAR",
-                      "name": "String",
+                      "kind": "INPUT_OBJECT",
+                      "name": "CreateFriendMutationInput",
                       "ofType": null
                     }
                   },

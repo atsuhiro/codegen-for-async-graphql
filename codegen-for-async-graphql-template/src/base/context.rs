@@ -1,8 +1,10 @@
-use super::{
-    Config, FileRender, RenderType, RendererInputObjectType, RendererInterfaceType,
-    RendererMutationsType, RendererObjectType, RendererScalarType,
-};
+use super::Config;
 use async_graphql_parser::schema::{Definition, Document, TypeDefinition};
+
+use crate::document_wrapper::{
+    FileRender, InputObjectTypeWrapper, InterfaceTypeWrapper, MutationsTypeWrapper,
+    ObjectTypeWrapper, RenderType, ScalarTypeWrapper,
+};
 
 #[derive(Debug, Clone)]
 pub struct Context<'a> {
@@ -20,7 +22,7 @@ impl<'a> Context<'a> {
     pub fn scalar_names(&self) -> Vec<String> {
         self.scalar_types()
             .iter()
-            .map(RendererScalarType::name)
+            .map(ScalarTypeWrapper::name)
             .collect()
     }
 
@@ -29,31 +31,31 @@ impl<'a> Context<'a> {
         let mut scalar_names: Vec<String> = self
             .scalar_types()
             .iter()
-            .map(RendererScalarType::file_name)
+            .map(ScalarTypeWrapper::file_name)
             .collect();
 
         let object_type_names: Vec<String> = self
             .object_types()
             .iter()
-            .map(RendererObjectType::file_name)
+            .map(ObjectTypeWrapper::file_name)
             .collect();
 
         let interface_type_names: Vec<String> = self
             .interface_types()
             .iter()
-            .map(RendererInterfaceType::file_name)
+            .map(InterfaceTypeWrapper::file_name)
             .collect();
 
         let mutation_type_names: Vec<String> = self
             .mutation_types()
             .iter()
-            .map(RendererMutationsType::file_name)
+            .map(MutationsTypeWrapper::file_name)
             .collect();
 
         let input_object_type_names: Vec<String> = self
             .input_object_types()
             .iter()
-            .map(RendererInputObjectType::file_name)
+            .map(InputObjectTypeWrapper::file_name)
             .collect();
 
         scalar_names.extend(object_type_names);
@@ -69,19 +71,20 @@ impl<'a> Context<'a> {
             .iter()
             .filter_map(|f| match &f.node {
                 Definition::TypeDefinition(n) => Some(&n.node),
+                Definition::SchemaDefinition(_n) => None,
                 _ => panic!("Not implemented:{:?}", f),
             })
             .collect()
     }
 
     #[must_use]
-    pub fn mutation_types(&self) -> Vec<RendererMutationsType> {
+    pub fn mutation_types(&self) -> Vec<MutationsTypeWrapper> {
         self.type_definition()
             .iter()
             .filter_map(|f| match &f {
                 TypeDefinition::Object(f) => {
                     if f.node.name.node == "Mutation" {
-                        return Some(RendererMutationsType {
+                        return Some(MutationsTypeWrapper {
                             doc: &f.node,
                             context: self,
                         });
@@ -94,7 +97,7 @@ impl<'a> Context<'a> {
     }
 
     #[must_use]
-    pub fn object_types(&self) -> Vec<RendererObjectType> {
+    pub fn object_types(&self) -> Vec<ObjectTypeWrapper> {
         self.type_definition()
             .iter()
             .filter_map(|f| match &f {
@@ -102,7 +105,7 @@ impl<'a> Context<'a> {
                     if f.node.name.node == "Mutation" {
                         return None;
                     }
-                    Some(RendererObjectType {
+                    Some(ObjectTypeWrapper {
                         doc: &f.node,
                         context: self,
                     })
@@ -113,11 +116,11 @@ impl<'a> Context<'a> {
     }
 
     #[must_use]
-    pub fn scalar_types(&self) -> Vec<RendererScalarType> {
+    pub fn scalar_types(&self) -> Vec<ScalarTypeWrapper> {
         self.type_definition()
             .iter()
             .filter_map(|f| match &f {
-                TypeDefinition::Scalar(f) => Some(RendererScalarType {
+                TypeDefinition::Scalar(f) => Some(ScalarTypeWrapper {
                     doc: &f.node,
                     context: self,
                 }),
@@ -127,11 +130,11 @@ impl<'a> Context<'a> {
     }
 
     #[must_use]
-    pub fn interface_types(&self) -> Vec<RendererInterfaceType> {
+    pub fn interface_types(&self) -> Vec<InterfaceTypeWrapper> {
         self.type_definition()
             .iter()
             .filter_map(|f| match &f {
-                TypeDefinition::Interface(f) => Some(RendererInterfaceType {
+                TypeDefinition::Interface(f) => Some(InterfaceTypeWrapper {
                     doc: &f.node,
                     context: self,
                 }),
@@ -141,11 +144,11 @@ impl<'a> Context<'a> {
     }
 
     #[must_use]
-    pub fn input_object_types(&self) -> Vec<RendererInputObjectType> {
+    pub fn input_object_types(&self) -> Vec<InputObjectTypeWrapper> {
         self.type_definition()
             .iter()
             .filter_map(|f| match &f {
-                TypeDefinition::InputObject(f) => Some(RendererInputObjectType {
+                TypeDefinition::InputObject(f) => Some(InputObjectTypeWrapper {
                     doc: &f.node,
                     context: self,
                 }),
