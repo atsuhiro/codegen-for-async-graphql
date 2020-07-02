@@ -26,11 +26,3 @@ pub fn generate_from_path(path: &str, config: &Config) {
 fn open_schema(path: &str) -> String {
     fs::read_to_string(path).unwrap()
 }
-
-#[test]
-fn generate_from_path_test() {
-    let config = Config {
-        output_bnase_path: "./".to_string(),
-    };
-    generate_from_path("./tests/query.graphql", &config)
-}
