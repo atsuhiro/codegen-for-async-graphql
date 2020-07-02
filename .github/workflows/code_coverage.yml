@@ -20,6 +20,10 @@ jobs:
         with:
           version: "0.11.0"
           args: --all --all-features
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{secrets.CODECOV_TOKEN}}
       - name: Archive code coverage results
         uses: actions/upload-artifact@v1
         with:
