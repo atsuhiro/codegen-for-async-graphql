@@ -1,5 +1,5 @@
-use super::create_friend_mutation_input::CreateFriendMutationInput;
-use super::create_friend_mutation_payload::CreateFriendMutationPayload;
+use super::super::input_object_type::create_friend_mutation_input::CreateFriendMutationInput;
+use super::super::object_type::create_friend_mutation_payload::CreateFriendMutationPayload;
 use super::ResolveMutation;
 use async_graphql::*;
 pub struct Mutation;

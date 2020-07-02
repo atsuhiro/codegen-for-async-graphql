@@ -4,19 +4,18 @@ mod models;
 
 use async_graphql::*;
 use async_std::task;
-use models::create_friend_mutation_input;
-use models::mutation::Mutation;
-use models::query::Query;
-use models::search_result::SearchResult;
-use models::url::Url;
-use models::user::User;
+
+use models::{
+    CreateFriendMutationInput, CreateFriendMutationPayload, Friend, FriendConnection, Me, Mutation,
+    Notification, Query, SearchResult, Url, User,
+};
 
 #[derive(Debug, Clone, Copy)]
 pub struct DataSource {}
 
 impl DataSource {
-    fn me(&self) -> models::me::Me {
-        models::me::Me {
+    fn me(&self) -> Me {
+        Me {
             id: ID::from("11111"),
             name: "Aaron".to_string(),
             email: Ok("aaa@".to_string()),
@@ -27,31 +26,31 @@ impl DataSource {
         }
     }
 
-    fn nodes(&self) -> Vec<models::friend::Friend> {
-        let friend1 = models::friend::Friend {
+    fn nodes(&self) -> Vec<Friend> {
+        let friend1 = Friend {
             id: ID::from("1-1"),
             name: "Beck".to_string(),
         };
         vec![friend1]
     }
 
-    fn friend(&self) -> models::friend::Friend {
-        models::friend::Friend {
+    fn friend(&self) -> Friend {
+        Friend {
             id: ID::from("1-1"),
             name: "Beck".to_string(),
         }
     }
 
-    fn friends(&self) -> models::friend_connection::FriendConnection {
-        models::friend_connection::FriendConnection { total_count: 10 }
+    fn friends(&self) -> FriendConnection {
+        FriendConnection { total_count: 10 }
     }
 
-    fn notifications(&self) -> FieldResult<Vec<models::notification::Notification>> {
-        let node1 = models::notification::Notification {
+    fn notifications(&self) -> FieldResult<Vec<Notification>> {
+        let node1 = Notification {
             id: ID::from("1-1"),
             title: "title1".to_string(),
         };
-        let node2 = models::notification::Notification {
+        let node2 = Notification {
             id: ID::from("2-1"),
             title: "title2".to_string(),
         };
@@ -67,9 +66,9 @@ impl DataSource {
 pub trait ResolveMutation {
     fn create_friend_mutation_resolver(
         &self,
-        input: create_friend_mutation_input::CreateFriendMutationInput,
-    ) -> FieldResult<models::create_friend_mutation_payload::CreateFriendMutationPayload> {
-        Ok(models::create_friend_mutation_payload::CreateFriendMutationPayload {})
+        input: CreateFriendMutationInput,
+    ) -> FieldResult<CreateFriendMutationPayload> {
+        Ok(CreateFriendMutationPayload {})
     }
 }
 

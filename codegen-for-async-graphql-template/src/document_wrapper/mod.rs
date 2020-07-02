@@ -13,8 +13,8 @@ use crate::base::utils::snake_case;
 use crate::base::Context;
 
 pub use type_wrapper::{
-    BaseType, Dependency, FileRender, RenderType, SupportField, SupportFields, SupportType,
-    SupportTypeName,
+    BaseType, Dependency, FileRender, ObjectPath, RenderType, SupportField, SupportFields,
+    SupportType, SupportTypeName,
 };
 
 pub use field_wrapper::FieldWrapper;

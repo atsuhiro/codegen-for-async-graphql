@@ -16,8 +16,12 @@ impl<'a, 'b> RenderField for Renderer<'a, 'b> {}
 impl<'a, 'b> RenderDependencies for Renderer<'a, 'b> {}
 
 impl<'a, 'b> Save for Renderer<'a, 'b> {
-    fn relative_path(&self) -> String {
+    fn file_name(&self) -> String {
         self.wrapper_object.file_name()
+    }
+
+    fn super_module_name(&self) -> Option<String> {
+        Some(self.wrapper_object.path().super_module_name)
     }
 
     fn str_src(&self) -> String {
@@ -57,7 +61,7 @@ impl<'a, 'b> Renderer<'a, 'b> {
         let dep = Self::render_dependencies(self.wrapper_object.dependencies());
         quote!(
             use async_graphql::*;
-            use super::create_friend_mutation_payload::CreateFriendMutationPayload;
+            use super::super::object_type::create_friend_mutation_payload::CreateFriendMutationPayload;
             use super::ResolveMutation;
 
             #dep

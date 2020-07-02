@@ -14,8 +14,12 @@ pub struct Renderer<'a, 'b> {
 impl<'a, 'b> RenderDependencies for Renderer<'a, 'b> {}
 
 impl<'a, 'b> Save for Renderer<'a, 'b> {
-    fn relative_path(&self) -> String {
+    fn file_name(&self) -> String {
         self.wrapper_object.file_name()
+    }
+
+    fn super_module_name(&self) -> Option<String> {
+        Some(self.wrapper_object.path().super_module_name)
     }
 
     fn str_src(&self) -> String {

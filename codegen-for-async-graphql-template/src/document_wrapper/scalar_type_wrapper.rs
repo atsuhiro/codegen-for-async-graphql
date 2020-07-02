@@ -4,7 +4,11 @@ use super::{BaseType, FileRender, RenderType};
 
 pub type ScalarTypeWrapper<'a, 'b> = BaseType<'a, 'b, ScalarType>;
 
-impl<'a, 'b> FileRender for ScalarTypeWrapper<'a, 'b> {}
+impl<'a, 'b> FileRender for ScalarTypeWrapper<'a, 'b> {
+    fn super_module_name(&self) -> String {
+        "scalar_type".to_string()
+    }
+}
 
 impl<'a, 'b> RenderType for ScalarTypeWrapper<'a, 'b> {
     #[must_use]

@@ -1,7 +1,7 @@
-use super::friend_connection::FriendConnection;
-use super::notification::Notification;
-use super::search_result::SearchResult;
-use super::url::Url;
+use super::super::object_type::friend_connection::FriendConnection;
+use super::super::object_type::notification::Notification;
+use super::super::scalar_type::url::Url;
+use super::super::union_type::search_result::SearchResult;
 use super::DataSource;
 use async_graphql::*;
 #[derive(Debug)]

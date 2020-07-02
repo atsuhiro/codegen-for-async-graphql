@@ -6,7 +6,11 @@ use super::{
 
 pub type InterfaceTypeWrapper<'a, 'b> = BaseType<'a, 'b, InterfaceType>;
 
-impl<'a, 'b> FileRender for InterfaceTypeWrapper<'a, 'b> {}
+impl<'a, 'b> FileRender for InterfaceTypeWrapper<'a, 'b> {
+    fn super_module_name(&self) -> String {
+        "interface_type".to_string()
+    }
+}
 
 impl<'a, 'b> RenderType for InterfaceTypeWrapper<'a, 'b> {
     #[must_use]
@@ -42,7 +46,8 @@ impl<'a, 'b> InterfaceTypeWrapper<'a, 'b> {
         self.implemented_object_types()
             .into_iter()
             .map(|f| Dependency {
-                module_name: f.path_name(),
+                super_module_name: f.super_module_name(),
+                module_name: f.file_name(),
                 name: f.name(),
             })
             .collect()

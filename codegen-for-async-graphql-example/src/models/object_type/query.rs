@@ -1,4 +1,4 @@
-use super::me::Me;
+use super::super::object_type::me::Me;
 use super::DataSource;
 use async_graphql::*;
 #[derive(Debug)]

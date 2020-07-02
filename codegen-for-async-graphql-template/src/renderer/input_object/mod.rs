@@ -1,8 +1,8 @@
 mod renderer;
 
 use super::{
-    Context, FieldRenderer, FileRender, InputObjectTypeWrapper, Output, RenderDependencies, Save,
-    SupportField,
+    Context, FieldRenderer, FileRender, InputObjectTypeWrapper, Output, RenderDependencies,
+    RenderType, Save, SupportField,
 };
 
 use renderer::Renderer;

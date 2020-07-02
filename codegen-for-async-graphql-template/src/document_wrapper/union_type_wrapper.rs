@@ -1,10 +1,14 @@
 use async_graphql_parser::schema::UnionType;
 
-use super::{BaseType, Dependency, FileRender, ObjectTypeWrapper, RenderType, SupportFields};
+use super::{BaseType, Dependency, FileRender, ObjectTypeWrapper, RenderType};
 
 pub type UnionTypeWrapper<'a, 'b> = BaseType<'a, 'b, UnionType>;
 
-impl<'a, 'b> FileRender for UnionTypeWrapper<'a, 'b> {}
+impl<'a, 'b> FileRender for UnionTypeWrapper<'a, 'b> {
+    fn super_module_name(&self) -> String {
+        "union_type".to_string()
+    }
+}
 
 impl<'a, 'b> RenderType for UnionTypeWrapper<'a, 'b> {
     #[must_use]
@@ -26,7 +30,8 @@ impl<'a, 'b> UnionTypeWrapper<'a, 'b> {
         self.implemented_object_types()
             .into_iter()
             .map(|f| Dependency {
-                module_name: f.path_name(),
+                super_module_name: f.super_module_name(),
+                module_name: f.file_name(),
                 name: f.name(),
             })
             .collect()

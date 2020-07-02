@@ -1,4 +1,4 @@
-use super::friend::Friend;
+use super::super::object_type::friend::Friend;
 use super::DataSource;
 use async_graphql::*;
 #[derive(Debug)]

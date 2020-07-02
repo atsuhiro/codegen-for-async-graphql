@@ -23,8 +23,8 @@ use crate::base::Context;
 
 use crate::document_wrapper::{
     Dependency, FileRender, InputObjectTypeWrapper, InterfaceTypeWrapper, MutationTypeWrapper,
-    MutationsTypeWrapper, ObjectTypeWrapper, RenderType, ScalarTypeWrapper, SupportField,
-    SupportFields, SupportType, SupportTypeName, UnionTypeWrapper,
+    MutationsTypeWrapper, ObjectPath, ObjectTypeWrapper, RenderType, ScalarTypeWrapper,
+    SupportField, SupportFields, SupportType, SupportTypeName, UnionTypeWrapper,
 };
 
 pub fn render_from_file(context: &Context) {

@@ -1,9 +1,10 @@
 use quote::quote;
 
-use proc_macro2::TokenStream;
+use proc_macro2::{Ident, Span, TokenStream};
 
 use super::{
-    FieldRenderer, FileRender, InputObjectTypeWrapper, RenderDependencies, Save, SupportField,
+    FieldRenderer, FileRender, InputObjectTypeWrapper, RenderDependencies, RenderType, Save,
+    SupportField,
 };
 
 pub struct Renderer<'a, 'b> {
@@ -13,8 +14,12 @@ pub struct Renderer<'a, 'b> {
 impl<'a, 'b> RenderDependencies for Renderer<'a, 'b> {}
 
 impl<'a, 'b> Save for Renderer<'a, 'b> {
-    fn relative_path(&self) -> String {
+    fn file_name(&self) -> String {
         self.wrapper_object.file_name()
+    }
+
+    fn super_module_name(&self) -> Option<String> {
+        Some(self.wrapper_object.path().super_module_name)
     }
 
     fn str_src(&self) -> String {
@@ -35,12 +40,13 @@ impl<'a, 'b> Renderer<'a, 'b> {
 
     fn token_stream(&self) -> TokenStream {
         let field_properties_token = self.field_properties_token();
+        let name = Ident::new(&self.wrapper_object.name(), Span::call_site());
 
         quote!(
             use async_graphql::*;
 
             #[InputObject]
-            pub struct CreateFriendMutationInput {
+            pub struct #name {
                 #field_properties_token
             }
         )

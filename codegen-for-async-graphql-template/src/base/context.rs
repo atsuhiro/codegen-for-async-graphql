@@ -1,8 +1,9 @@
 use super::Config;
 use async_graphql_parser::schema::{Definition, Document, TypeDefinition};
+use std::collections::HashMap;
 
 use crate::document_wrapper::{
-    FileRender, InputObjectTypeWrapper, InterfaceTypeWrapper, MutationsTypeWrapper,
+    FileRender, InputObjectTypeWrapper, InterfaceTypeWrapper, MutationsTypeWrapper, ObjectPath,
     ObjectTypeWrapper, RenderType, ScalarTypeWrapper, UnionTypeWrapper,
 };
 
@@ -10,6 +11,13 @@ use crate::document_wrapper::{
 pub struct Context<'a> {
     pub config: &'a Config,
     doc: &'a Document,
+}
+
+fn get_paths<T>(obj: &[T]) -> Vec<ObjectPath>
+where
+    T: FileRender,
+{
+    obj.iter().map(|f| f.path()).collect()
 }
 
 impl<'a> Context<'a> {
@@ -27,49 +35,68 @@ impl<'a> Context<'a> {
     }
 
     #[must_use]
-    pub fn file_names(&self) -> Vec<String> {
-        let mut scalar_names: Vec<String> = self
-            .scalar_types()
+    pub fn union_names(&self) -> Vec<String> {
+        self.union_types()
             .iter()
-            .map(ScalarTypeWrapper::file_name)
-            .collect();
+            .map(UnionTypeWrapper::name)
+            .collect()
+    }
 
-        let object_type_names: Vec<String> = self
-            .object_types()
+    pub fn input_object_type_names(&self) -> Vec<String> {
+        self.input_object_types()
             .iter()
-            .map(ObjectTypeWrapper::file_name)
-            .collect();
+            .map(InputObjectTypeWrapper::name)
+            .collect()
+    }
 
-        let interface_type_names: Vec<String> = self
-            .interface_types()
-            .iter()
-            .map(InterfaceTypeWrapper::file_name)
-            .collect();
+    pub fn file_paths(&self) -> Vec<ObjectPath> {
+        vec![
+            self.scalar_file_paths(),
+            self.object_type_file_paths(),
+            self.interface_type_file_paths(),
+            self.mutation_type_file_paths(),
+            self.input_object_type_file_paths(),
+            self.union_type_file_paths(),
+        ]
+        .into_iter()
+        .flatten()
+        .collect()
+    }
 
-        let mutation_type_names: Vec<String> = self
-            .mutation_types()
-            .iter()
-            .map(MutationsTypeWrapper::file_name)
-            .collect();
+    pub fn structured_file_paths(&self) -> HashMap<String, Vec<ObjectPath>> {
+        let mut map = HashMap::new();
 
-        let input_object_type_names: Vec<String> = self
-            .input_object_types()
-            .iter()
-            .map(InputObjectTypeWrapper::file_name)
-            .collect();
+        self.file_paths().iter().for_each(|f| {
+            let r = vec![];
+            map.entry(f.super_module_name.clone())
+                .or_insert_with(|| r)
+                .push(f.clone());
+        });
+        map
+    }
 
-        let union_type_names: Vec<String> = self
-            .union_types()
-            .iter()
-            .map(UnionTypeWrapper::file_name)
-            .collect();
+    fn scalar_file_paths(&self) -> Vec<ObjectPath> {
+        get_paths(&self.scalar_types())
+    }
 
-        scalar_names.extend(object_type_names);
-        scalar_names.extend(interface_type_names);
-        scalar_names.extend(mutation_type_names);
-        scalar_names.extend(input_object_type_names);
-        scalar_names.extend(union_type_names);
-        scalar_names
+    fn object_type_file_paths(&self) -> Vec<ObjectPath> {
+        get_paths(&self.object_types())
+    }
+
+    fn interface_type_file_paths(&self) -> Vec<ObjectPath> {
+        get_paths(&self.interface_types())
+    }
+
+    fn mutation_type_file_paths(&self) -> Vec<ObjectPath> {
+        get_paths(&self.mutation_types())
+    }
+
+    fn input_object_type_file_paths(&self) -> Vec<ObjectPath> {
+        get_paths(&self.input_object_types())
+    }
+
+    fn union_type_file_paths(&self) -> Vec<ObjectPath> {
+        get_paths(&self.union_types())
     }
 
     fn type_definition(&self) -> Vec<&TypeDefinition> {

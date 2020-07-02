@@ -8,7 +8,11 @@ pub struct InputObjectTypeWrapper<'a, 'b> {
     pub context: &'a Context<'b>,
 }
 
-impl<'a, 'b> FileRender for InputObjectTypeWrapper<'a, 'b> {}
+impl<'a, 'b> FileRender for InputObjectTypeWrapper<'a, 'b> {
+    fn super_module_name(&self) -> String {
+        "input_object_type".to_string()
+    }
+}
 
 impl<'a, 'b> RenderType for InputObjectTypeWrapper<'a, 'b> {
     #[must_use]

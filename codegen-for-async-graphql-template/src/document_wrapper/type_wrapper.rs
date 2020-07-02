@@ -11,15 +11,33 @@ pub trait RenderType {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct ObjectPath {
+    pub super_module_name: String,
+    pub module_name: String,
+    pub name: String,
+}
+
 pub trait FileRender: RenderType {
     #[must_use]
     fn file_name(&self) -> String {
         snake_case(&self.name())
     }
+
+    fn super_module_name(&self) -> String;
+
+    fn path(&self) -> ObjectPath {
+        ObjectPath {
+            super_module_name: self.super_module_name(),
+            module_name: self.file_name(),
+            name: self.name(),
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
 pub struct Dependency {
+    pub super_module_name: String,
     pub module_name: String,
     pub name: String,
 }
@@ -40,11 +58,6 @@ pub trait SupportFields: RenderType {
             .into_iter()
             .flat_map(|f| f.dependencies())
             .collect()
-    }
-
-    #[must_use]
-    fn path_name(&self) -> String {
-        snake_case(&self.name())
     }
 
     fn field_partition(&self) -> (Vec<FieldWrapper>, Vec<FieldWrapper>) {
@@ -196,6 +209,18 @@ pub trait SupportTypeName: SupportType {
         }
     }
 
+    fn is_input_object_type(&self) -> bool {
+        let names = self.context().input_object_type_names();
+        let name = &self.type_name();
+        names.iter().any(|f| f == name)
+    }
+
+    fn is_union(&self) -> bool {
+        let names = self.context().union_names();
+        let name = &self.type_name();
+        names.iter().any(|f| f == name)
+    }
+
     #[must_use]
     fn is_custom_scalar(&self) -> bool {
         match &self.scalar_type() {
@@ -211,6 +236,23 @@ pub trait SupportTypeName: SupportType {
     fn dependencies(&self) -> Vec<Dependency> {
         if self.is_custom_scalar() {
             let dep = Dependency {
+                super_module_name: "scalar_type".to_string(), // ToDo
+                module_name: self.module_name().unwrap(),
+                name: self.type_name(),
+            };
+            return vec![dep];
+        }
+        if self.is_union() {
+            let dep = Dependency {
+                super_module_name: "union_type".to_string(), // ToDo
+                module_name: self.module_name().unwrap(),
+                name: self.type_name(),
+            };
+            return vec![dep];
+        }
+        if self.is_input_object_type() {
+            let dep = Dependency {
+                super_module_name: "input_object_type".to_string(), // ToDo
                 module_name: self.module_name().unwrap(),
                 name: self.type_name(),
             };
@@ -218,6 +260,7 @@ pub trait SupportTypeName: SupportType {
         }
         if !self.is_scalar() {
             let dep = Dependency {
+                super_module_name: "object_type".to_string(), // ToDo
                 module_name: self.module_name().unwrap(),
                 name: self.type_name(),
             };

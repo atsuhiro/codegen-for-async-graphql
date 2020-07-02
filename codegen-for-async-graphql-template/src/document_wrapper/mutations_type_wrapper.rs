@@ -7,7 +7,11 @@ pub struct MutationsTypeWrapper<'a, 'b> {
     pub context: &'a Context<'b>,
 }
 
-impl<'a, 'b> FileRender for MutationsTypeWrapper<'a, 'b> {}
+impl<'a, 'b> FileRender for MutationsTypeWrapper<'a, 'b> {
+    fn super_module_name(&self) -> String {
+        "mutations_type".to_string()
+    }
+}
 
 impl<'a, 'b> RenderType for MutationsTypeWrapper<'a, 'b> {
     #[must_use]

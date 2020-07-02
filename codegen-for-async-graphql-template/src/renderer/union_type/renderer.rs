@@ -11,8 +11,12 @@ pub struct Renderer<'a, 'b> {
 impl<'a, 'b> RenderDependencies for Renderer<'a, 'b> {}
 
 impl<'a, 'b> Save for Renderer<'a, 'b> {
-    fn relative_path(&self) -> String {
+    fn file_name(&self) -> String {
         self.wrapper_object.file_name()
+    }
+
+    fn super_module_name(&self) -> Option<String> {
+        Some(self.wrapper_object.path().super_module_name)
     }
 
     fn str_src(&self) -> String {
@@ -64,62 +68,4 @@ impl<'a, 'b> Renderer<'a, 'b> {
             #dep
         )
     }
-
-    // pub fn name_token(&self) -> TokenStream {
-    //     let name = Ident::new(&self.wrapper_object.name(), Span::call_site());
-    //     quote!(#name)
-    // }
-
-    // pub fn enum_properties(&self) -> TokenStream {
-    //     let mut res = quote!();
-    //     self.wrapper_object
-    //         .implemented_object_types()
-    //         .iter()
-    //         .for_each(|f| {
-    //             let name = Ident::new(&f.name(), Span::call_site());
-    //             res = quote!(
-    //                 #res
-    //                 #name(#name),
-    //             )
-    //         });
-    //     res
-    // }
-
-    // fn dependencies_token(&self) -> TokenStream {
-    //     let dep = Self::render_dependencies(self.wrapper_object.dependencies());
-    //     quote!(
-    //         use async_graphql::*;
-    //         #dep
-    //     )
-    // }
-
-    // fn struct_properties_token(&self) -> TokenStream {
-    //     let mut properties = quote! {};
-    //     self.wrapper_object.scalar_fields().iter().for_each(|f| {
-    //         let field_property = FieldRenderer::field_interface_token(f);
-    //         properties = quote!(
-    //             #properties
-    //             #field_property,
-    //         );
-    //     });
-    //     properties
-    // }
-
-    // fn object_type_code(
-    //     name: &TokenStream,
-    //     fields: &TokenStream,
-    //     dependencies: &TokenStream,
-    //     enum_peoperties: &TokenStream,
-    // ) -> TokenStream {
-    //     quote!(
-    //         #dependencies
-
-    //         #[Interface(
-    //             #fields
-    //         )]
-    //         pub enum #name {
-    //             #enum_peoperties
-    //         }
-    //     )
-    // }
 }
