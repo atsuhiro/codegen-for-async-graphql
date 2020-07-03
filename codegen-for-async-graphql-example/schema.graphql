@@ -49,7 +49,7 @@ type Me implements User {
   friends(first: Int): FriendConnection!
   notifications: [Notification]
   web: Url
-  search: [SearchResult]
+  search(text: String!): [SearchResult]
 }
 
 type Notification {

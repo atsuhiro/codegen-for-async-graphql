@@ -18,11 +18,11 @@ impl DataSource {
         Me {
             id: ID::from("11111"),
             name: "Aaron".to_string(),
-            email: Ok("aaa@".to_string()),
+            email: Some("aaa@".to_string()),
             rank: 5.1,
-            age: Ok(30),
-            active: Ok(true),
-            web: Ok(Url("https://github.com/".to_string())),
+            age: Some(30),
+            active: Some(true),
+            web: Some(Url("https://github.com/".to_string())),
         }
     }
 
@@ -41,11 +41,11 @@ impl DataSource {
         }
     }
 
-    fn friends(&self) -> FriendConnection {
+    fn friends(&self, first: Option<i32>) -> FriendConnection {
         FriendConnection { total_count: 10 }
     }
 
-    fn notifications(&self) -> FieldResult<Vec<Notification>> {
+    fn notifications(&self) -> Option<Vec<Notification>> {
         let node1 = Notification {
             id: ID::from("1-1"),
             title: "title1".to_string(),
@@ -54,12 +54,12 @@ impl DataSource {
             id: ID::from("2-1"),
             title: "title2".to_string(),
         };
-        Ok(vec![node1, node2])
+        Some(vec![node1, node2])
     }
 
-    fn search(&self) -> FieldResult<Vec<SearchResult>> {
+    fn search(&self, text: String) -> Option<Vec<SearchResult>> {
         let res = vec![];
-        Ok(res)
+        Some(res)
     }
 }
 
@@ -67,8 +67,8 @@ pub trait ResolveMutation {
     fn create_friend_mutation_resolver(
         &self,
         input: CreateFriendMutationInput,
-    ) -> FieldResult<CreateFriendMutationPayload> {
-        Ok(CreateFriendMutationPayload {})
+    ) -> Option<CreateFriendMutationPayload> {
+        Some(CreateFriendMutationPayload {})
     }
 }
 
@@ -113,7 +113,7 @@ fn instance_query() {
                     id
                     title
                 }
-                search {
+                search(text: \"abc\") {
                     ... on Friend {
                         id
                         name

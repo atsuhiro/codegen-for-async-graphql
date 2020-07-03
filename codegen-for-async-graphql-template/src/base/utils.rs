@@ -12,3 +12,16 @@ pub fn snake_case(variant: &str) -> String {
     }
     snake
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn rename_to_snake_case() {
+        let snake = "very_tasty".to_string();
+        ["VeryTasty", "veryTasty"].iter().for_each(|f| {
+            assert_eq!(snake, snake_case(f));
+        });
+    }
+}

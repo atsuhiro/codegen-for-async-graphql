@@ -9,7 +9,7 @@ impl Mutation {
     async fn create_friend_mutation(
         &self,
         input: CreateFriendMutationInput,
-    ) -> FieldResult<CreateFriendMutationPayload> {
+    ) -> Option<CreateFriendMutationPayload> {
         self.create_friend_mutation_resolver(input)
     }
 }

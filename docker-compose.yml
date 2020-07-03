@@ -1,0 +1,9 @@
+version: "2"
+services:
+  rust:
+    image: rust:1.44
+    security_opt:
+      - seccomp:unconfined
+    volumes:
+      - .:/myapp
+    command: /bin/sh -c "cd ./myapp && cargo install cargo-tarpaulin && cargo tarpaulin --all --all-features --out Html"

@@ -17,8 +17,6 @@ use internal::field::Renderer as FieldRenderer;
 use output::Output;
 use save::Save;
 
-use proc_macro2::TokenStream;
-
 use crate::base::Context;
 
 use crate::document_wrapper::{
@@ -27,7 +25,7 @@ use crate::document_wrapper::{
     SupportField, SupportFields, SupportType, SupportTypeName, UnionTypeWrapper,
 };
 
-pub fn render_from_file(context: &Context) {
+pub fn render_to_files(context: &Context) {
     interface::Generate::generate_files(context);
     object_type::Generate::generate_files(context);
     mutation::Generate::generate_files(context);
@@ -35,8 +33,4 @@ pub fn render_from_file(context: &Context) {
     input_object::Generate::generate_files(context);
     union_type::Generate::generate_files(context);
     mod_file::Generate::generate_files(context);
-}
-
-pub fn generate_object_types_token_stream(context: &Context) -> Vec<TokenStream> {
-    input_object::Generate::generate_token_stream(context)
 }

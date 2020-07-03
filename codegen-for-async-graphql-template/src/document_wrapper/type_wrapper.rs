@@ -274,8 +274,8 @@ pub trait SupportTypeName: SupportType {
         match (self.non_null(), self.is_list()) {
             (true, false) => name,
             (true, true) => format!("Vec<{}>", name),
-            (false, false) => format!("FieldResult<{}>", name),
-            (false, true) => format!("FieldResult<Vec<{}>>", name),
+            (false, false) => format!("Option<{}>", name),
+            (false, true) => format!("Option<Vec<{}>>", name),
         }
     }
 }

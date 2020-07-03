@@ -9,7 +9,6 @@ name = "codegen"
 path = "src/codegen.rs"
 
 [dependencies]
-codegen-for-async-graphql-derive = { path = "codegen-for-async-graphql-derive" }
 codegen-for-async-graphql-template = { path = "codegen-for-async-graphql-template" }
 async-graphql = "1.15.14"
 async-graphql-parser = "1.14.2"
@@ -19,7 +18,6 @@ toolchain_find = "0.1"
 
 [workspace]
 members = [
-    "codegen-for-async-graphql-derive",
     "codegen-for-async-graphql-example",
     "codegen-for-async-graphql-template",
 ]

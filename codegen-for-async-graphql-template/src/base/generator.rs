@@ -1,9 +1,17 @@
-use super::{generate_object_types_token_stream, render_from_file};
+use std::fs;
+
+use super::render_to_files;
 use async_graphql_parser::parse_schema;
 use async_graphql_parser::schema::Document;
 
 use super::{Config, Context};
-use proc_macro2::TokenStream;
+
+pub fn generate_from_path(path: &str, config: &Config) {
+    let schema = open_schema(path);
+    let doc = parse(&schema);
+    let context = Context::new(config, &doc);
+    render_to_files(&context);
+}
 
 fn parse(schema: &str) -> Document {
     match parse_schema(schema) {
@@ -15,25 +23,6 @@ fn parse(schema: &str) -> Document {
     }
 }
 
-pub fn generate_token_from_string(schema: &str, config: &Config) -> Vec<TokenStream> {
-    let doc = parse(schema);
-    let context = Context::new(config, &doc);
-    generate_object_types_token_stream(&context)
-}
-
-pub fn generate_file_from_string(schema: &str, config: &Config) {
-    let doc = parse(schema);
-
-    let context = Context::new(config, &doc);
-
-    render_from_file(&context);
-}
-
-#[test]
-fn generate_from_string_test() {
-    let config = Config {
-        output_bnase_path: "./".to_string(),
-    };
-    let schema: String = include_str!("../../../tests/schemas/query.graphql").to_string();
-    generate_file_from_string(&schema, &config)
+fn open_schema(path: &str) -> String {
+    fs::read_to_string(path).unwrap()
 }
