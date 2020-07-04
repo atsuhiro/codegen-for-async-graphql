@@ -7,6 +7,7 @@ pub struct Query {
 }
 #[Object]
 impl Query {
+    #[field(desc = "\"me: Single-line comment\"")]
     pub async fn me(&self, ctx: &Context<'_>) -> Me {
         ctx.data::<DataSource>().me()
     }

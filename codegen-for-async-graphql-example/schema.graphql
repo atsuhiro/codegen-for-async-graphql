@@ -4,6 +4,7 @@ schema {
 }
 
 type Query {
+  "me: Single-line comment"
   me: Me!
   active: Bool!
 }

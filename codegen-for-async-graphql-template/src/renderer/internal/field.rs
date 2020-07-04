@@ -86,8 +86,12 @@ impl Renderer {
         let ty = &Self::struct_name_token(f);
         let arguments = Self::arguments_token(f);
         let arguments_variebles = Self::arguments_variebles(f);
-
+        let field = match f.description() {
+            Some(desc) => quote!(#[field(desc = #desc)]),
+            None => quote!(),
+        };
         quote!(
+            #field
             pub async fn #n(&self, ctx: &Context<'_>, #arguments ) -> #ty {
                 ctx.data::<DataSource>().#n(#arguments_variebles)
             }

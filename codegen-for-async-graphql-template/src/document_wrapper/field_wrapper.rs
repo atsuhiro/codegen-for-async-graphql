@@ -36,7 +36,7 @@ impl<'a, 'b> RenderType for FieldWrapper<'a, 'b> {
     #[must_use]
     fn description(&self) -> Option<&String> {
         match &self.doc.description {
-            Some(_f) => panic!("Not Implemented"),
+            Some(f) => Some(&f.node),
             _ => None,
         }
     }
