@@ -1,6 +1,6 @@
 use std::env;
 
-use codegen_for_async_graphql_template::{generate_from_path, Config};
+use codegen_for_async_graphql_renderer::{generate_from_path, Config};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
