@@ -24,5 +24,8 @@ fn parse(schema: &str) -> Document {
 }
 
 fn open_schema(path: &str) -> String {
-    fs::read_to_string(path).unwrap()
+    match fs::read_to_string(path) {
+        Ok(f) => f,
+        Err(f) => panic!("Not Found(Schema File): {:?}, {}", f, path),
+    }
 }

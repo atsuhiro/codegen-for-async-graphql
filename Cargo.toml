@@ -1,10 +1,11 @@
 [package]
 name = "codegen-for-async-graphql"
-version = "0.1.0"
+version = "0.2.4"
 authors = ["Atsuhiro Takahashi <fxyoxbjis@gmail.com>"]
 edition = "2018"
 description = "Internal code generation crate for async-graphql"
 publish = true
+license = "MIT"
 homepage = "https://github.com/atsuhiro/codegen-for-async-graphql"
 repository = "https://github.com/atsuhiro/codegen-for-async-graphql"
 keywords = ["graphql", "async-graphql"]
@@ -16,7 +17,8 @@ name = "cargo-codegen-for-async-graphql"
 path = "src/codegen.rs"
 
 [dependencies]
-codegen-for-async-graphql-renderer= { path = "codegen-for-async-graphql-renderer", version = "0.1.0" }
+clap = "3.0.0-beta.1"
+codegen-for-async-graphql-renderer= { path = "codegen-for-async-graphql-renderer", version = "0.2.1" }
 
 [workspace]
 members = [

@@ -1,15 +1,15 @@
 [package]
 name = "codegen-for-async-graphql-renderer"
-version = "0.1.0"
+version = "0.2.1"
 authors = ["Atsuhiro Takahashi <fxyoxbjis@gmail.com>"]
 edition = "2018"
 description = "Internal code generation crate for async-graphql"
 publish = true
+license = "MIT"
 homepage = "https://github.com/atsuhiro/codegen-for-async-graphql"
 repository = "https://github.com/atsuhiro/codegen-for-async-graphql"
 keywords = ["graphql", "async-graphql"]
 categories = ["network-programming", "web-programming"]
-readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

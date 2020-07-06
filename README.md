@@ -5,7 +5,8 @@
 ## Usage
 
 ```bash
-cargo run --bin cargo-codegen-for-async-graphql path_to_schema.graphql path_to_output_dir
+cargo codegen-for-async-graphql --schema {path_to_schema} --output {path_to_output}
+# cargo codegen-for-async-graphql --schema ./schema.graphql --output src/models
 ```
 
 ```rust
