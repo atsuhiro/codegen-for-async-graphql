@@ -14,7 +14,7 @@ use crate::base::Context;
 
 pub use type_wrapper::{
     BaseType, Dependency, FileRender, ObjectPath, RenderType, SupportField, SupportFields,
-    SupportType, SupportTypeName,
+    SupportType, SupportTypeName, UseContext,
 };
 
 pub use field_wrapper::FieldWrapper;

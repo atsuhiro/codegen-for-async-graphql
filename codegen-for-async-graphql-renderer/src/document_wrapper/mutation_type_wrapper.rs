@@ -1,6 +1,6 @@
 use async_graphql_parser::schema::{Field, InputValue, Type};
 
-use super::{Context, RenderType, SupportField, SupportType};
+use super::{Context, RenderType, SupportField, SupportType, UseContext};
 
 pub struct MutationTypeWrapper<'a, 'b> {
     pub doc: &'a Field,
@@ -13,11 +13,13 @@ impl<'a, 'b> SupportType for MutationTypeWrapper<'a, 'b> {
     }
 }
 
-impl<'a, 'b> SupportField for MutationTypeWrapper<'a, 'b> {
+impl<'a, 'b> UseContext for MutationTypeWrapper<'a, 'b> {
     fn context(&self) -> &Context {
         self.context
     }
+}
 
+impl<'a, 'b> SupportField for MutationTypeWrapper<'a, 'b> {
     fn input_value_types(&self) -> Vec<&InputValue> {
         let mut res = vec![];
         self.doc.arguments.iter().for_each(|f| res.push(&f.node));

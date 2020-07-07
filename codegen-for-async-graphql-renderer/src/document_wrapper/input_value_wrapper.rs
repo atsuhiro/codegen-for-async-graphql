@@ -1,7 +1,7 @@
 use super::Context;
 use async_graphql_parser::schema::{InputValue, Type};
 
-use super::{snake_case, RenderType, SupportType, SupportTypeName};
+use super::{snake_case, RenderType, SupportType, SupportTypeName, UseContext};
 
 #[derive(Debug, Clone)]
 pub struct InputValueWrapper<'a, 'b> {
@@ -30,11 +30,13 @@ impl<'a, 'b> RenderType for InputValueWrapper<'a, 'b> {
     }
 }
 
-impl<'a, 'b> SupportTypeName for InputValueWrapper<'a, 'b> {
+impl<'a, 'b> UseContext for InputValueWrapper<'a, 'b> {
     fn context(&self) -> &Context {
         self.context
     }
 }
+
+impl<'a, 'b> SupportTypeName for InputValueWrapper<'a, 'b> {}
 
 impl<'a, 'b> InputValueWrapper<'a, 'b> {
     #[must_use]

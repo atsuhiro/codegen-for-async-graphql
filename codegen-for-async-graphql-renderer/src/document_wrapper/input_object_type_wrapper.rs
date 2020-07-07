@@ -1,6 +1,6 @@
 use async_graphql_parser::schema::{InputObjectType, InputValue};
 
-use super::{Context, FileRender, RenderType, SupportField};
+use super::{Context, FileRender, RenderType, SupportField, UseContext};
 
 #[derive(Debug, Clone)]
 pub struct InputObjectTypeWrapper<'a, 'b> {
@@ -29,11 +29,13 @@ impl<'a, 'b> RenderType for InputObjectTypeWrapper<'a, 'b> {
     }
 }
 
-impl<'a, 'b> SupportField for InputObjectTypeWrapper<'a, 'b> {
+impl<'a, 'b> UseContext for InputObjectTypeWrapper<'a, 'b> {
     fn context(&self) -> &Context {
         self.context
     }
+}
 
+impl<'a, 'b> SupportField for InputObjectTypeWrapper<'a, 'b> {
     fn input_value_types(&self) -> Vec<&InputValue> {
         let mut res = vec![];
         self.doc.fields.iter().for_each(|f| res.push(&f.node));

@@ -1,7 +1,7 @@
 use super::Context;
 use async_graphql_parser::schema::{Field, InputValue, Type};
 
-use super::{RenderType, SupportField, SupportType, SupportTypeName};
+use super::{RenderType, SupportField, SupportType, SupportTypeName, UseContext};
 
 #[derive(Debug, Clone)]
 pub struct FieldWrapper<'a, 'b> {
@@ -15,11 +15,13 @@ impl<'a, 'b> SupportType for FieldWrapper<'a, 'b> {
     }
 }
 
-impl<'a, 'b> SupportField for FieldWrapper<'a, 'b> {
+impl<'a, 'b> UseContext for FieldWrapper<'a, 'b> {
     fn context(&self) -> &Context {
         self.context
     }
+}
 
+impl<'a, 'b> SupportField for FieldWrapper<'a, 'b> {
     fn input_value_types(&self) -> Vec<&InputValue> {
         let mut res = vec![];
         self.doc.arguments.iter().for_each(|f| res.push(&f.node));
@@ -42,8 +44,4 @@ impl<'a, 'b> RenderType for FieldWrapper<'a, 'b> {
     }
 }
 
-impl<'a, 'b> SupportTypeName for FieldWrapper<'a, 'b> {
-    fn context(&self) -> &Context {
-        self.context
-    }
-}
+impl<'a, 'b> SupportTypeName for FieldWrapper<'a, 'b> {}

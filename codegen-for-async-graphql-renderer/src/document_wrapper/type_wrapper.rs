@@ -18,6 +18,8 @@ pub struct ObjectPath {
     pub name: String,
 }
 
+pub type Dependency = ObjectPath;
+
 pub trait FileRender: RenderType {
     #[must_use]
     fn file_name(&self) -> String {
@@ -36,19 +38,16 @@ pub trait FileRender: RenderType {
 }
 
 #[derive(Debug, Clone)]
-pub struct Dependency {
-    pub super_module_name: String,
-    pub module_name: String,
-    pub name: String,
-}
-
-#[derive(Debug, Clone)]
 pub struct BaseType<'a, 'b, T> {
     pub doc: &'a T,
     pub context: &'a Context<'b>,
 }
 
-pub trait SupportFields: RenderType {
+pub trait UseContext {
+    fn context(&self) -> &Context;
+}
+
+pub trait SupportFields {
     #[must_use]
     fn fields(&self) -> Vec<FieldWrapper>;
 
@@ -73,9 +72,7 @@ pub trait SupportFields: RenderType {
     }
 }
 
-pub trait SupportField: RenderType {
-    #[must_use]
-    fn context(&self) -> &Context;
+pub trait SupportField: UseContext {
     fn input_value_types(&self) -> Vec<&InputValue>;
 
     fn arguments(&self) -> Vec<InputValueWrapper> {
@@ -163,9 +160,7 @@ pub enum ScalarTypeOnScalar {
     CustomScalar,
 }
 
-pub trait SupportTypeName: SupportType {
-    fn context(&self) -> &Context;
-
+pub trait SupportTypeName: SupportType + UseContext {
     fn scalar_type(&self) -> Option<ScalarTypeOnScalar> {
         let names = self.context().scalar_names();
         let name = &self.type_name();
@@ -232,41 +227,32 @@ pub trait SupportTypeName: SupportType {
         }
     }
 
+    fn super_module_name(&self) -> Option<String> {
+        if self.is_custom_scalar() {
+            return Some("scalar_type".to_string());
+        } else if self.is_union() {
+            return Some("union_type".to_string());
+        } else if self.is_input_object_type() {
+            return Some("input_object_type".to_string());
+        } else if !self.is_scalar() {
+            return Some("object_type".to_string());
+        };
+        None
+    }
+
     #[must_use]
     fn dependencies(&self) -> Vec<Dependency> {
-        if self.is_custom_scalar() {
-            let dep = Dependency {
-                super_module_name: "scalar_type".to_string(), // ToDo
-                module_name: self.module_name().unwrap(),
-                name: self.type_name(),
-            };
-            return vec![dep];
+        match self.super_module_name() {
+            Some(super_module_name) => {
+                let dep = Dependency {
+                    super_module_name,
+                    module_name: self.module_name().unwrap(),
+                    name: self.type_name(),
+                };
+                return vec![dep];
+            }
+            None => vec![],
         }
-        if self.is_union() {
-            let dep = Dependency {
-                super_module_name: "union_type".to_string(), // ToDo
-                module_name: self.module_name().unwrap(),
-                name: self.type_name(),
-            };
-            return vec![dep];
-        }
-        if self.is_input_object_type() {
-            let dep = Dependency {
-                super_module_name: "input_object_type".to_string(), // ToDo
-                module_name: self.module_name().unwrap(),
-                name: self.type_name(),
-            };
-            return vec![dep];
-        }
-        if !self.is_scalar() {
-            let dep = Dependency {
-                super_module_name: "object_type".to_string(), // ToDo
-                module_name: self.module_name().unwrap(),
-                name: self.type_name(),
-            };
-            return vec![dep];
-        }
-        vec![]
     }
 
     fn struct_name(&self) -> String {
