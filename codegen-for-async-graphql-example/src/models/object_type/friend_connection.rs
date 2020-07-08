@@ -8,7 +8,7 @@ pub struct FriendConnection {
 #[Object]
 impl FriendConnection {
     pub async fn nodes(&self, ctx: &Context<'_>) -> Vec<Friend> {
-        ctx.data::<DataSource>().nodes()
+        ctx.data_unchecked::<DataSource>().nodes()
     }
     pub async fn total_count(&self) -> i32 {
         self.total_count.clone()

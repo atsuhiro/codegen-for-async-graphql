@@ -17,13 +17,13 @@ pub struct Me {
 #[Object]
 impl Me {
     pub async fn friends(&self, ctx: &Context<'_>, first: Option<i32>) -> FriendConnection {
-        ctx.data::<DataSource>().friends(first)
+        ctx.data_unchecked::<DataSource>().friends(first)
     }
     pub async fn notifications(&self, ctx: &Context<'_>) -> Option<Vec<Notification>> {
-        ctx.data::<DataSource>().notifications()
+        ctx.data_unchecked::<DataSource>().notifications()
     }
     pub async fn search(&self, ctx: &Context<'_>, text: String) -> Option<Vec<SearchResult>> {
-        ctx.data::<DataSource>().search(text)
+        ctx.data_unchecked::<DataSource>().search(text)
     }
     pub async fn id(&self) -> ID {
         self.id.clone()

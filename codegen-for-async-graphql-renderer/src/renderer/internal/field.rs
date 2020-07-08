@@ -93,7 +93,7 @@ impl Renderer {
         quote!(
             #field
             pub async fn #n(&self, ctx: &Context<'_>, #arguments ) -> #ty {
-                ctx.data::<DataSource>().#n(#arguments_variebles)
+                ctx.data_unchecked::<DataSource>().#n(#arguments_variebles)
             }
         )
     }
