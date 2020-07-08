@@ -6,6 +6,6 @@ pub struct CreateFriendMutationPayload {}
 #[Object]
 impl CreateFriendMutationPayload {
     pub async fn friend(&self, ctx: &Context<'_>) -> Friend {
-        ctx.data::<DataSource>().friend()
+        ctx.data_unchecked::<DataSource>().friend()
     }
 }

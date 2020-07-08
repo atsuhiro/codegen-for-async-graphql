@@ -9,7 +9,7 @@ pub struct Query {
 impl Query {
     #[field(desc = "\"me: Single-line comment\"")]
     pub async fn me(&self, ctx: &Context<'_>) -> Me {
-        ctx.data::<DataSource>().me()
+        ctx.data_unchecked::<DataSource>().me()
     }
     pub async fn active(&self) -> bool {
         self.active.clone()

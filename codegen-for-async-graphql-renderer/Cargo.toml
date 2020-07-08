@@ -14,7 +14,7 @@ categories = ["network-programming", "web-programming"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-async-graphql = "1.15.14"
+async-graphql = "1.16.6"
 async-graphql-parser = "1.14.2"
 proc-macro2 = { version = "1.0", default-features = false }
 quote = "1.0.7"
