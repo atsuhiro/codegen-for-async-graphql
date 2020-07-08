@@ -1,8 +1,6 @@
-# graphql-js
-# https://github.com/graphql/graphql-js/blob/58aaa1df30b501b67d6986ea2fc1a8b95ac9fbca/src/utilities/getIntrospectionQuery.js
-
 query IntrospectionQuery {
   __schema {
+    description
     queryType {
       name
     }
@@ -17,6 +15,8 @@ query IntrospectionQuery {
     }
     directives {
       name
+      description
+      isRepeatable
       locations
       args {
         ...InputValue
@@ -27,8 +27,11 @@ query IntrospectionQuery {
 fragment FullType on __Type {
   kind
   name
+  description
+  specifiedByUrl
   fields(includeDeprecated: true) {
     name
+    description
     args {
       ...InputValue
     }
@@ -46,6 +49,7 @@ fragment FullType on __Type {
   }
   enumValues(includeDeprecated: true) {
     name
+    description
     isDeprecated
     deprecationReason
   }
@@ -55,6 +59,7 @@ fragment FullType on __Type {
 }
 fragment InputValue on __InputValue {
   name
+  description
   type {
     ...TypeRef
   }
