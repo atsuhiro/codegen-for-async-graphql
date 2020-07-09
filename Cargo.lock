@@ -387,7 +387,7 @@ dependencies = [
 
 [[package]]
 name = "codegen-for-async-graphql"
-version = "0.2.5"
+version = "0.2.6"
 dependencies = [
  "clap",
  "codegen-for-async-graphql-renderer",
@@ -403,7 +403,7 @@ dependencies = [
 
 [[package]]
 name = "codegen-for-async-graphql-renderer"
-version = "0.2.5"
+version = "0.2.6"
 dependencies = [
  "async-graphql",
  "async-graphql-parser",
