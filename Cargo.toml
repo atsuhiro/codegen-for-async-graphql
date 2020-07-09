@@ -1,6 +1,6 @@
 [package]
 name = "codegen-for-async-graphql"
-version = "0.2.4"
+version = "0.2.5"
 authors = ["Atsuhiro Takahashi <fxyoxbjis@gmail.com>"]
 edition = "2018"
 description = "Internal code generation crate for async-graphql"
