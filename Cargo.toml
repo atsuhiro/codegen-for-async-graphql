@@ -25,3 +25,7 @@ members = [
     "codegen-for-async-graphql-example",
     "codegen-for-async-graphql-renderer",
 ]
+
+exclude = [
+    "tmp/*",
+]
