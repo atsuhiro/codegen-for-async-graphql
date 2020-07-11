@@ -4,7 +4,8 @@ use std::collections::HashMap;
 
 use crate::document_wrapper::{
     FileRender, InputObjectTypeWrapper, InterfaceTypeWrapper, MutationsTypeWrapper, ObjectPath,
-    ObjectTypeWrapper, RenderType, ScalarTypeWrapper, UnionTypeWrapper,
+    ObjectTypeWrapper, RenderType, ScalarTypeWrapper, SubscriptionRootTypeWrapper,
+    UnionTypeWrapper,
 };
 
 #[derive(Debug, Clone)]
@@ -57,6 +58,7 @@ impl<'a> Context<'a> {
             self.mutation_type_file_paths(),
             self.input_object_type_file_paths(),
             self.union_type_file_paths(),
+            self.subscription_type_file_paths(),
         ]
         .into_iter()
         .flatten()
@@ -89,6 +91,10 @@ impl<'a> Context<'a> {
 
     fn mutation_type_file_paths(&self) -> Vec<ObjectPath> {
         get_paths(&self.mutation_types())
+    }
+
+    fn subscription_type_file_paths(&self) -> Vec<ObjectPath> {
+        get_paths(&self.subscription_types())
     }
 
     fn input_object_type_file_paths(&self) -> Vec<ObjectPath> {
@@ -131,12 +137,34 @@ impl<'a> Context<'a> {
     }
 
     #[must_use]
+    pub fn subscription_types(&self) -> Vec<SubscriptionRootTypeWrapper> {
+        self.type_definition()
+            .iter()
+            .filter_map(|f| match &f {
+                TypeDefinition::Object(f) => {
+                    if f.node.name.node == "Subscription" {
+                        return Some(SubscriptionRootTypeWrapper {
+                            doc: &f.node,
+                            context: self,
+                        });
+                    }
+                    None
+                }
+                _ => None,
+            })
+            .collect()
+    }
+
+    #[must_use]
     pub fn object_types(&self) -> Vec<ObjectTypeWrapper> {
         self.type_definition()
             .iter()
             .filter_map(|f| match &f {
                 TypeDefinition::Object(f) => {
                     if f.node.name.node == "Mutation" {
+                        return None;
+                    }
+                    if f.node.name.node == "Subscription" {
                         return None;
                     }
                     Some(ObjectTypeWrapper {
