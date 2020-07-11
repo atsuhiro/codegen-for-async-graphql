@@ -49,9 +49,9 @@ dependencies = [
 
 [[package]]
 name = "async-graphql"
-version = "1.16.8"
+version = "1.16.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9858525cbab952ee271bd7c914669892a0fec19bac70207b0bb44a2647c9ef3f"
+checksum = "ce1f0183671a6222b0745fd9ee189e681883613876d3741aa2ffaec746c4b6dc"
 dependencies = [
  "Inflector",
  "anyhow",
@@ -387,7 +387,7 @@ dependencies = [
 
 [[package]]
 name = "codegen-for-async-graphql"
-version = "0.2.6"
+version = "0.2.7"
 dependencies = [
  "clap",
  "codegen-for-async-graphql-renderer",
@@ -403,7 +403,7 @@ dependencies = [
 
 [[package]]
 name = "codegen-for-async-graphql-renderer"
-version = "0.2.6"
+version = "0.2.7"
 dependencies = [
  "async-graphql",
  "async-graphql-parser",
@@ -995,9 +995,9 @@ checksum = "237a5ed80e274dbc66f86bd59c1e25edc039660be53194b5fe0a482e0f2612ea"
 
 [[package]]
 name = "proc-macro-crate"
-version = "0.1.4"
+version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e10d4b51f154c8a7fb96fd6dad097cb74b863943ec010ac94b9fd1be8861fe1e"
+checksum = "1d6ea3c4595b96363c13943497db34af4460fb474a95c43f4446ad341b8c9785"
 dependencies = [
  "toml",
 ]
@@ -1101,9 +1101,9 @@ dependencies = [
 
 [[package]]
 name = "redox_syscall"
-version = "0.1.56"
+version = "0.1.57"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2439c63f3f6139d1b57529d16bc3b8bb855230c8efcc5d3a896c8bea7c3b1e84"
+checksum = "41cc0f7e4d5d4544e8861606a285bb08d3e70712ccc7d2b84d7c0ccfaf4b05ce"
 
 [[package]]
 name = "redox_users"

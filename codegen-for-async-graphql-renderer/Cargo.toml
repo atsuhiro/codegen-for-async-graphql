@@ -1,6 +1,6 @@
 [package]
 name = "codegen-for-async-graphql-renderer"
-version = "0.2.6"
+version = "0.2.7"
 authors = ["Atsuhiro Takahashi <fxyoxbjis@gmail.com>"]
 edition = "2018"
 description = "Internal code generation crate for async-graphql"
@@ -14,8 +14,8 @@ categories = ["network-programming", "web-programming"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-async-graphql = "1.16.6"
-async-graphql-parser = "1.14.2"
+async-graphql = "1.16.9"
+async-graphql-parser = "1.16.6"
 proc-macro2 = { version = "1.0", default-features = false }
 quote = "1.0.7"
 toolchain_find = "0.1"
