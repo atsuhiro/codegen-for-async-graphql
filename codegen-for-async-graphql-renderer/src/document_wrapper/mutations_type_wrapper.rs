@@ -1,7 +1,10 @@
 use async_graphql_parser::schema::ObjectType;
 
-use super::{Context, Dependency, FileRender, MutationTypeWrapper, RenderType, SupportField};
+use super::{
+    Context, Dependency, FileRender, MutationTypeWrapper, RenderType, SupportField, SupportTypeName,
+};
 
+#[derive(Debug)]
 pub struct MutationsTypeWrapper<'a, 'b> {
     pub doc: &'a ObjectType,
     pub context: &'a Context<'b>,
@@ -42,9 +45,18 @@ impl<'a, 'b> MutationsTypeWrapper<'a, 'b> {
     }
 
     pub fn dependencies(&self) -> Vec<Dependency> {
-        self.mutations()
+        let mut dep: Vec<Dependency> = self
+            .mutations()
+            .iter()
+            .flat_map(|f| f.dependencies())
+            .collect();
+
+        let mut arg_dep: Vec<Dependency> = self
+            .mutations()
             .iter()
             .flat_map(|f| f.arguments_dependencies())
-            .collect()
+            .collect();
+        dep.append(&mut arg_dep);
+        dep
     }
 }

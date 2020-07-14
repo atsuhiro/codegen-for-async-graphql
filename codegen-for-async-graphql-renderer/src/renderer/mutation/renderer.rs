@@ -61,7 +61,6 @@ impl<'a, 'b> Renderer<'a, 'b> {
         let dep = Self::render_dependencies(self.wrapper_object.dependencies());
         quote!(
             use async_graphql::*;
-            use super::super::object_type::create_friend_mutation_payload::CreateFriendMutationPayload;
             use super::ResolveMutation;
 
             #dep

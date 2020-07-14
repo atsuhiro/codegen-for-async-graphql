@@ -1,7 +1,8 @@
 use async_graphql_parser::schema::{Field, InputValue, Type};
 
-use super::{Context, RenderType, SupportField, SupportType, UseContext};
+use super::{Context, RenderType, SupportField, SupportType, SupportTypeName, UseContext};
 
+#[derive(Debug)]
 pub struct MutationTypeWrapper<'a, 'b> {
     pub doc: &'a Field,
     pub context: &'a Context<'b>,
@@ -26,6 +27,8 @@ impl<'a, 'b> SupportField for MutationTypeWrapper<'a, 'b> {
         res
     }
 }
+
+impl<'a, 'b> SupportTypeName for MutationTypeWrapper<'a, 'b> {}
 
 impl<'a, 'b> RenderType for MutationTypeWrapper<'a, 'b> {
     #[must_use]

@@ -26,20 +26,6 @@ pub trait Render {
             (false, true) => quote!(Option<Vec<#name>>),
         }
     }
-
-    fn struct_name_option_token<T>(f: &T) -> TokenStream
-    where
-        T: SupportType,
-    {
-        let name = f.code_type_name();
-        let name = Ident::new(&name, Span::call_site());
-        match (f.non_null(), f.is_list()) {
-            (true, false) => quote!(#name),
-            (true, true) => quote!(Vec<#name>),
-            (false, false) => quote!(Option<#name>),
-            (false, true) => quote!(Option<Vec<#name>>),
-        }
-    }
 }
 
 pub struct Renderer {}
@@ -53,7 +39,7 @@ impl Renderer {
     {
         let mut res = quote!();
         f.arguments().iter().for_each(|f| {
-            let code_type_name = Self::struct_name_option_token(f);
+            let code_type_name = Self::struct_name_token(f);
             let field_name = Ident::new(&f.field_name(), Span::call_site());
             res = quote!(
                 #res
