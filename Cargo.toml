@@ -22,8 +22,8 @@ codegen-for-async-graphql-renderer= { path = "codegen-for-async-graphql-renderer
 
 [workspace]
 members = [
-    "codegen-for-async-graphql-example",
     "codegen-for-async-graphql-renderer",
+    "examples/codegen-for-async-graphql-example",
 ]
 
 exclude = [
