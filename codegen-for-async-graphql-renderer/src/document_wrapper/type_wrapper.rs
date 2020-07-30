@@ -145,7 +145,7 @@ pub trait SupportType: RenderType {
     fn code_type_name(&self) -> String {
         let name = self.type_name();
         match name.as_str() {
-            "Bool" => "bool".to_string(),
+            "Bool" | "Boolean" => "bool".to_string(),
             "Int" => "i32".to_string(),
             "Float" => "f64".to_string(),
             "ID" => "ID".to_string(),
