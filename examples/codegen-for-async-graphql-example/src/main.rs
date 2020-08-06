@@ -186,7 +186,7 @@ async fn test_subscription() {
 async fn introspection_query() {
     use std::fs;
 
-    let query = fs::read_to_string("../tests/queries/introspection.graphql").unwrap();
+    let query = fs::read_to_string("../../tests/queries/introspection.graphql").unwrap();
 
     let json = run(query.as_str()).await;
     let path = "./tests/snapshots/introspection.json";
