@@ -58,7 +58,7 @@ impl<'a, 'b> Renderer<'a, 'b> {
             let field_property_token = FieldRenderer::field_property_token(f);
             res = quote!(
                 #res
-                #field_property_token
+                #field_property_token,
             )
         });
         res
